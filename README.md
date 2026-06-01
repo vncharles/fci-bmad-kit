@@ -10,11 +10,11 @@ cài vào project bằng **một lệnh**, gọi agent dùng được ngay trong
 
 **Remote (1 lệnh — chạy tại thư mục project):**
 ```bash
-curl -sSL <REPO_RAW_URL>/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash
 ```
 Hoặc chỉ định project khác:
 ```bash
-curl -sSL <REPO_RAW_URL>/install.sh | bash -s -- /path/to/project
+curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash -s -- /path/to/project
 ```
 
 **Local (test trước khi đẩy lên repo):**
@@ -23,8 +23,8 @@ curl -sSL <REPO_RAW_URL>/install.sh | bash -s -- /path/to/project
 ./install.sh /path/to/project
 ```
 
-> Thay `<REPO_RAW_URL>` bằng raw URL của repo sau khi bạn tách kit này ra GitLab.
-> Hoặc set sẵn biến `BMAD_KIT_REPO_URL` để khỏi sửa script.
+> Repo: https://github.com/vncharles/fci-bmad-kit (Public, branch `main`).
+> Có thể override bằng biến `BMAD_KIT_REPO_URL` / `BMAD_KIT_REPO_BRANCH` nếu cần.
 
 ## Sau khi cài
 

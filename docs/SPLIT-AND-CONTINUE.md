@@ -1,7 +1,7 @@
 # Tách `bmad-kit/` ra repo riêng & việc tiếp theo
 
 Tài liệu này dành cho **bạn (maintainer)** để: (1) tách folder `bmad-kit/` ra một repo
-GitLab độc lập, (2) phát hành release, (3) tiếp tục phát triển các phase sau.
+GitHub độc lập, (2) phát hành release, (3) tiếp tục phát triển các phase sau.
 
 ---
 
@@ -17,40 +17,43 @@ git init -b main
 git add .
 git commit -m "feat: BMAD Kit 1.0.0 — packaged, generic, Claude Code format"
 
-# 3. Tạo repo trên GitLab (vd iaas/lbaas/bmad-kit) rồi:
-git remote add origin https://gitlab.fci.vn/iaas/lbaas/bmad-kit.git
+# 3. Tạo repo trên GitHub rồi:
+git remote add origin https://github.com/vncharles/fci-bmad-kit.git
 git push -u origin main
 ```
 
-## 2. Điền `REPO_URL` để curl|bash chạy được
+## 2. `REPO_URL` để curl|bash chạy được
 
-Trong `install.sh`, sửa biến đầu file cho khớp repo vừa tạo:
+Trong `install.sh` biến đầu file đã trỏ về repo GitHub:
 ```bash
-REPO_URL="${BMAD_KIT_REPO_URL:-https://gitlab.fci.vn/iaas/lbaas/bmad-kit.git}"
+REPO_URL="${BMAD_KIT_REPO_URL:-https://github.com/vncharles/fci-bmad-kit.git}"
 REPO_BRANCH="${BMAD_KIT_REPO_BRANCH:-main}"
 ```
-Và cập nhật `<REPO_RAW_URL>` trong `README.md`. Raw URL GitLab có dạng:
+Raw URL của GitHub dùng host `raw.githubusercontent.com`:
 ```
-https://gitlab.fci.vn/iaas/lbaas/bmad-kit/-/raw/main/install.sh
+https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh
 ```
-→ Lệnh cài cuối cùng cho mọi team:
+→ Lệnh cài cuối cùng cho mọi team (repo Public nên chạy ngay):
 ```bash
-curl -sSL https://gitlab.fci.vn/iaas/lbaas/bmad-kit/-/raw/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash
 ```
 
-> ⚠️ Nếu repo **private**, `curl`/`git clone` cần auth. Lựa chọn:
-> - Để repo internal-readable cho toàn org, hoặc
+> ⚠️ Nếu sau này để repo **private**, `curl`/`git clone` cần auth. Lựa chọn:
+> - Giữ repo Public (hiện tại), hoặc
 > - Hướng dẫn team `git clone` tay rồi chạy `./install.sh /path/to/project` (local mode).
 
-## 3. Tạo GitLab Release
+## 3. Tạo GitHub Release
 
 Mỗi version → 1 tag + Release:
 ```bash
 git tag -a v1.0.0 -m "BMAD Kit 1.0.0"
 git push origin v1.0.0
 ```
-Trên GitLab UI: **Deployments → Releases → New release**, chọn tag `v1.0.0`, dán nội dung
-từ `CHANGELOG.md`. (Tùy chọn) đính kèm tarball `bmad-kit-1.0.0.tar.gz` để team pin version.
+Tạo Release bằng `gh` CLI (hoặc GitHub UI: **Releases → Draft a new release**, chọn tag `v1.0.0`):
+```bash
+gh release create v1.0.0 --title "BMAD Kit 1.0.0" --notes-file CHANGELOG.md
+```
+(Tùy chọn) đính kèm tarball `bmad-kit-1.0.0.tar.gz` để team pin version.
 
 ## 4. Test trước khi công bố
 

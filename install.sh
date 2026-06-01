@@ -3,8 +3,8 @@
 # BMAD Kit installer — cài bộ agent/skill BMAD (Claude Code format) vào 1 project.
 #
 # Dùng:
-#   Remote (1 lệnh):   curl -sSL <REPO_RAW_URL>/install.sh | bash
-#   Remote + target:   curl -sSL <REPO_RAW_URL>/install.sh | bash -s -- /path/to/project
+#   Remote (1 lệnh):   curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash
+#   Remote + target:   curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash -s -- /path/to/project
 #   Local (trong kit): ./install.sh [target-dir]
 #
 # Sau khi cài: mở Claude Code, gõ /fci-po /fci-ba /fci-dev /fci-tester để dùng ngay.
@@ -12,9 +12,9 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CẤU HÌNH — điền sau khi tách folder này ra repo GitLab riêng
+# CẤU HÌNH — repo GitHub phát hành kit (override bằng biến môi trường nếu cần)
 # ─────────────────────────────────────────────────────────────────────────────
-REPO_URL="${BMAD_KIT_REPO_URL:-https://gitlab.fci.vn/iaas/lbaas/bmad-kit.git}"
+REPO_URL="${BMAD_KIT_REPO_URL:-https://github.com/vncharles/fci-bmad-kit.git}"
 REPO_BRANCH="${BMAD_KIT_REPO_BRANCH:-main}"
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
 fi
 
 CLEANUP_TMP=""
-cleanup() { [ -n "$CLEANUP_TMP" ] && rm -rf "$CLEANUP_TMP"; }
+cleanup() { [ -n "$CLEANUP_TMP" ] && rm -rf "$CLEANUP_TMP"; return 0; }
 trap cleanup EXIT
 
 if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/payload" ]; then
