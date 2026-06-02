@@ -1,0 +1,12 @@
+# BMad Method installation — managed by BMad installer, not committed
+_bmad/*
+!_bmad/custom/
+
+# BMad output
+_bmad-output/
+
+# design artifacts
+design-artifacts/
+
+# ignore claude
+.claude/

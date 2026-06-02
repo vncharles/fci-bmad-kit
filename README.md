@@ -1,75 +1,91 @@
-# BMAD Kit
+# FCI BMad Kit
 
-Bộ **agent + skill + workflow** theo phương pháp BMAD, đóng gói dùng chung cho mọi team —
-cài vào project bằng **một lệnh**, gọi agent dùng được ngay trong **Claude Code**.
+Bộ **customization** cho [BMad Method](https://github.com/bmad-method/bmad) — định nghĩa 4 agent theo quy trình FCI: **PO → BA → Dev → Tester**.
 
-> Đây là khuôn mẫu (template) các team đều theo. Mỗi project chỉ cài kit + điền
-> `team-config.md`; mọi context riêng (stack, branch, lint/test command) nằm trong file đó.
+Cài trực tiếp qua BMad Method, không cần script riêng.
 
-## Cài nhanh
+---
 
-**Remote (1 lệnh — chạy tại thư mục project):**
+## Yêu cầu
+
+- [BMad Method](https://github.com/bmad-method/bmad) đã được cài vào project (`_bmad/` tồn tại).
+
+---
+
+## Cài đặt
+
+### Bước 1 — Cài BMad Method (nếu chưa có)
+
+Làm theo hướng dẫn chính thức tại repo BMad Method.
+
+### Bước 2 — Apply FCI customizations
+
+Copy 2 thứ từ repo này vào project:
+
+**TOML overrides** (vào `_bmad/custom/`):
 ```bash
-curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash
+cp _bmad/custom/config.toml          <project>/_bmad/custom/config.toml
+cp _bmad/custom/bmad-agent-analyst.toml  <project>/_bmad/custom/
+cp _bmad/custom/bmad-agent-pm.toml       <project>/_bmad/custom/
+cp _bmad/custom/bmad-agent-dev.toml      <project>/_bmad/custom/
+cp _bmad/custom/bmad-tea.toml            <project>/_bmad/custom/
 ```
-Hoặc chỉ định project khác:
+
+**Slash commands** (vào `.claude/commands/`):
 ```bash
-curl -sSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh | bash -s -- /path/to/project
+cp .claude/commands/fci-*.md  <project>/.claude/commands/
 ```
 
-**Local (test trước khi đẩy lên repo):**
-```bash
-./install.sh                 # cài vào thư mục hiện tại
-./install.sh /path/to/project
-```
+### Bước 3 — Dùng ngay trong Claude Code
 
-> Repo: https://github.com/vncharles/fci-bmad-kit (Public, branch `main`).
-> Có thể override bằng biến `BMAD_KIT_REPO_URL` / `BMAD_KIT_REPO_BRANCH` nếu cần.
+| Command | Agent | Tên |
+|---|---|---|
+| `/fci-po` | Product Owner | Thanh |
+| `/fci-ba` | Business Analyst | Vanh |
+| `/fci-dev` | Developer | Hieu |
+| `/fci-tester` | QA Tester | Hanh |
 
-## Sau khi cài
+---
 
-Kit đặt vào project:
-```
-<project>/
-├── .bmad/                  # agents, skills, templates, workflows
-│   └── .kit-version        # version đã cài
-├── .claude/commands/       # fci-po, fci-ba, fci-dev, fci-tester, fci-bmad-handoff, fci-bmad-status
-├── team-config.md          # ★ điền context project (KHÔNG bị đè khi update)
-└── handoff/                # nơi các role trao đổi
-```
-
-Mở Claude Code và gõ:
-
-| Command            | Role / việc                         |
-|--------------------|-------------------------------------|
-| `/fci-po`          | Product Owner — PRD, Epic           |
-| `/fci-ba`          | Business Analyst — Story, AC        |
-| `/fci-dev`         | Developer — Task, implement         |
-| `/fci-tester`      | Tester — Test plan                  |
-| `/fci-bmad-status` | Xem trạng thái workflow             |
-| `/fci-bmad-handoff`| Tạo handoff giữa các role           |
-
-## Cấu trúc kit
+## Cấu trúc repo
 
 ```
-bmad-kit/
-├── install.sh        # entry point duy nhất
+fci-bmad-kit/
+├── _bmad/
+│   └── custom/
+│       ├── config.toml              # agent names
+│       ├── bmad-agent-analyst.toml  # BA (Vanh)
+│       ├── bmad-agent-pm.toml       # PO (Thanh)
+│       ├── bmad-agent-dev.toml      # Dev (Hieu)
+│       └── bmad-tea.toml            # Tester (Hanh)
+├── .claude/
+│   └── commands/
+│       ├── fci-ba.md
+│       ├── fci-po.md
+│       ├── fci-dev.md
+│       └── fci-tester.md
 ├── VERSION
-├── README.md
 ├── CHANGELOG.md
-├── docs/             # design spec + hướng dẫn tách-repo & maintain
-└── payload/          # nội dung được cài vào project
-    ├── bmad/         # → <project>/.bmad/
-    └── claude/       # → <project>/.claude/
+└── README.md
 ```
 
-## Conflict policy khi cài lại / update
+---
 
-- Ghi **đè** các file do kit quản lý (`.bmad/agents|skills|templates|workflows`, các `fci-*` command) để đồng bộ version mới.
-- **Không bao giờ** đè `team-config.md` (context riêng của team).
+## Workflow
 
-## Phase sau (chưa có)
-- Hỗ trợ Cursor / Codex / provider khác.
-- Cơ chế version-check & auto-update.
+```
+PO (Thanh)  →  BA (Vanh)  →  Dev (Hieu)  →  Tester (Hanh)  →  PO sign-off
+```
 
-Chi tiết thiết kế & hướng dẫn maintain: xem `docs/`.
+Handoff files:
+- `handoff/po-to-ba-[feature].md`
+- `handoff/ba-to-dev-[feature].md`
+- `handoff/dev-to-tester-[story-id].md`
+- `handoff/tester-to-po-[story-id]-approved.md`
+- `handoff/tester-to-dev-BUG-[id].md`
+
+---
+
+## Update customizations
+
+Các TOML files trong `_bmad/custom/` là **sparse overrides** — chỉ chứa những gì khác với BMad default. Khi BMad Method update, chạy lại BMad installer; overrides của FCI không bị đè.
