@@ -32,6 +32,9 @@ DOC_LANG="${DOC_LANG:-Vietnamese}"                                       # ngôn
 OUTPUT_FOLDER="${OUTPUT_FOLDER:-_bmad-output}"
 HANDOFF_FOLDER="${HANDOFF_FOLDER:-handoff}"                              # biến riêng của module fci
 
+# ── Codegraph MCP (các agent đọc code dùng để duyệt code nhanh) ─────────────────
+SETUP_CODEGRAPH="${SETUP_CODEGRAPH:-1}"                                  # 1 = setup, 0 = bỏ qua
+
 echo "▶ Cài FCI BMad Kit (non-interactive)"
 echo "  dir=$TARGET_DIR  modules=$MODULES  tools=$TOOLS  channel=$CHANNEL"
 echo "  user=$USER_NAME  comm=$COMM_LANG  doc=$DOC_LANG  handoff=$HANDOFF_FOLDER"
@@ -49,6 +52,47 @@ npx --yes "bmad-method@${BMAD_VERSION}" install \
   --document-output-language "$DOC_LANG" \
   --output-folder "$OUTPUT_FOLDER" \
   --set "fci.fci_handoff_folder=$HANDOFF_FOLDER"
+
+echo
+echo "✓ BMad đã cài xong."
+
+# ── Setup Codegraph MCP cho project ────────────────────────────────────────────
+if [ "$SETUP_CODEGRAPH" = "1" ]; then
+  PROJECT_PATH="$(cd "$TARGET_DIR" && pwd)"
+  echo
+  echo "▶ Setup Codegraph MCP cho: $PROJECT_PATH"
+
+  # 1) Kiểm tra codegraph, cài nếu thiếu
+  if codegraph --version >/dev/null 2>&1; then
+    echo "  ✓ codegraph đã có: $(codegraph --version 2>&1 | head -n1)"
+  else
+    echo "  • Chưa có codegraph — đang cài: npm install -g codegraph"
+    npm install -g codegraph
+  fi
+
+  # 2) Init + status trong thư mục project
+  (
+    cd "$PROJECT_PATH"
+    echo "  • codegraph init"
+    codegraph init || echo "    ⚠ codegraph init lỗi/đã init trước đó — bỏ qua."
+    echo "  • codegraph status"
+    codegraph status || true
+  )
+
+  # 3) Đăng ký MCP server vào Claude Code
+  if command -v claude >/dev/null 2>&1; then
+    echo "  • claude mcp add codegraph"
+    claude mcp add codegraph -- codegraph serve --mcp --path "$PROJECT_PATH" \
+      || echo "    ⚠ Không add được (có thể đã tồn tại). Bỏ qua."
+  else
+    echo "  ⚠ Không tìm thấy CLI 'claude' — bỏ qua bước add MCP."
+    echo "    Chạy thủ công sau: claude mcp add codegraph -- codegraph serve --mcp --path \"$PROJECT_PATH\""
+  fi
+  echo "  ✓ Codegraph setup xong."
+else
+  echo
+  echo "• Bỏ qua setup Codegraph (SETUP_CODEGRAPH=$SETUP_CODEGRAPH)."
+fi
 
 echo
 echo "✓ Xong. Dùng trong Claude Code: /fci-po  /fci-ba  /fci-dev  /fci-tester"

@@ -64,8 +64,9 @@ CHANNEL="stable" \
 | `COMM_LANG` / `DOC_LANG` | `Vietnamese` | Ngôn ngữ giao tiếp / tài liệu |
 | `OUTPUT_FOLDER` | `_bmad-output` | Thư mục output |
 | `HANDOFF_FOLDER` | `handoff` | Nơi lưu handoff giữa các role |
+| `SETUP_CODEGRAPH` | `1` | `1` = tự cài & setup Codegraph MCP, `0` = bỏ qua |
 
-> Yêu cầu Node `>=20.12`. Script chỉ chạy 1 lệnh `npx bmad-method install` với đầy đủ flag non-interactive.
+> Yêu cầu Node `>=20.12`. Script chạy `npx bmad-method install` (đầy đủ flag non-interactive), rồi **setup Codegraph MCP** cho project: kiểm tra `codegraph --version` → `npm install -g codegraph` nếu thiếu → `codegraph init` + `codegraph status` → `claude mcp add codegraph -- codegraph serve --mcp --path <project>`. Các agent đọc code (dev/ba/tester) dùng Codegraph để duyệt code nhanh; nếu không cần, đặt `SETUP_CODEGRAPH=0`.
 
 ### Cách 2 — Cài tương tác (qua BMad installer)
 
