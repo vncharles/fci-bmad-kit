@@ -1,0 +1,27 @@
+{
+  "name": "fci-bmad-kit",
+  "owner": {
+    "name": "FCI"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/vncharles/fci-bmad-kit",
+  "repository": "https://github.com/vncharles/fci-bmad-kit",
+  "keywords": ["bmad", "fci", "product-owner", "business-analyst", "developer", "qa"],
+  "plugins": [
+    {
+      "name": "fci",
+      "source": "./",
+      "description": "FCI process kit — Product Owner (Thanh), Business Analyst (Vanh), Developer (Hieu), and QA Tester (Hanh) agents coordinating through file-based handoffs. Requires bmm + tea for dispatched skills.",
+      "version": "2.0.0",
+      "author": {
+        "name": "FCI"
+      },
+      "skills": [
+        "./src/fci-po",
+        "./src/fci-ba",
+        "./src/fci-dev",
+        "./src/fci-tester"
+      ]
+    }
+  ]
+}

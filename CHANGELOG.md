@@ -11,6 +11,12 @@
 - Slash command `/fci-*` giờ do installer sinh ra từ module, không còn là file rời trong `.claude/commands/`
   (vốn bị `.gitignore` bỏ qua → không lên git → là một lý do bản cũ "không chạy được").
 
+### Discovery
+- Thêm `.claude-plugin/marketplace.json` để installer vào *discovery mode* khi cài từ git URL.
+  Thiếu file này, installer chạy *direct mode* (chỉ quét SKILL.md cấp 1 ở gốc repo) → "0 installable modules".
+- 4 agent skill nằm phẳng ở `src/fci-*`; `module.yaml` + `module-help.csv` đặt ở `src/` (cha chung của các skill)
+  theo đúng Strategy 1 của plugin-resolver.
+
 ### Prerequisites
 - Yêu cầu cài kèm `bmm` (built-in) và `tea` (external) để các menu skill resolve được.
 
