@@ -65,8 +65,12 @@ CHANNEL="stable" \
 | `OUTPUT_FOLDER` | `_bmad-output` | Thư mục output |
 | `HANDOFF_FOLDER` | `handoff` | Nơi lưu handoff giữa các role |
 | `SETUP_CODEGRAPH` | `1` | `1` = tự cài & setup Codegraph MCP, `0` = bỏ qua |
+| `AUTO_INSTALL_NODE` | `1` | `1` = tự cài Node qua nvm nếu thiếu/cũ, `0` = chỉ báo lỗi |
+| `NODE_VERSION` | `20` | Major Node sẽ cài khi auto-install |
 
-> Yêu cầu Node `>=20.12`. Script chạy `npx bmad-method install` (đầy đủ flag non-interactive), rồi **setup Codegraph MCP** cho project: kiểm tra `codegraph --version` → `npm install -g codegraph` nếu thiếu → `codegraph init` + `codegraph status` → `claude mcp add codegraph -- codegraph serve --mcp --path <project>`. Các agent đọc code (dev/ba/tester) dùng Codegraph để duyệt code nhanh; nếu không cần, đặt `SETUP_CODEGRAPH=0`.
+> **Node:** bmad-method 6.8+ cần Node `>=20.12`. Script tự kiểm tra; nếu máy **chưa có Node hoặc Node quá cũ**, mặc định nó **tự cài Node qua nvm** (cài luôn nvm vào `$HOME` nếu chưa có — user-space, không cần sudo). Muốn tự quản lý Node thì đặt `AUTO_INSTALL_NODE=0`.
+>
+> Sau đó script chạy `npx bmad-method install` (đầy đủ flag non-interactive), rồi **setup Codegraph MCP** cho project: kiểm tra `codegraph --version` → `npm install -g codegraph` nếu thiếu → `codegraph init` + `codegraph status` → `claude mcp add codegraph -- codegraph serve --mcp --path <project>`. Các agent đọc code (dev/ba/tester) dùng Codegraph để duyệt code nhanh; nếu không cần, đặt `SETUP_CODEGRAPH=0`.
 
 ### Cách 2 — Cài tương tác (qua BMad installer)
 

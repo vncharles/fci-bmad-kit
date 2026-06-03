@@ -1,98 +1,55 @@
 #!/usr/bin/env bash
 #
-# FCI BMad Kit — one-shot non-interactive installer.
+# FCI BMad Kit — orchestrator: chạy cả 2 bước.
+#   1) install-bmad.sh        — cài BMad (bmm + tea + fci) cho claude-code
+#   2) install-codegraph.sh   — setup Codegraph MCP (bỏ qua nếu SETUP_CODEGRAPH=0)
 #
-# Bỏ qua phần hỏi-đáp của `npx bmad-method install`. Cài sẵn:
-#   - bmm  (built-in BMad: bmad-prd, bmad-create-story, bmad-dev-story, ...)
-#   - tea  (external: bmad-method-test-architecture-enterprise)
-#   - fci  (module này, lấy từ git URL bên dưới)
-# rồi cấu hình cho IDE claude-code.
+# Muốn chạy riêng từng phần thì gọi thẳng install-bmad.sh / install-codegraph.sh.
 #
 # Dùng:
-#   ./install.sh                         # cài vào thư mục hiện tại với mặc định
-#   TARGET_DIR=/path/to/project ./install.sh
-#   USER_NAME="Trong" COMM_LANG="Vietnamese" ./install.sh
-#
-# Mọi giá trị dưới đây đều override được bằng biến môi trường.
+#   ./install.sh                                  # chạy local
+#   curl -fsSL .../install.sh | bash              # chạy qua mạng (tự tải 2 script con)
+#   SETUP_CODEGRAPH=0 ./install.sh                # chỉ cài BMad
+#   TARGET_DIR=/path USER_NAME="Trong" ./install.sh
 
 set -euo pipefail
 
-# ── Lựa chọn cài đặt (đã bake sẵn — sửa ở đây hoặc truyền qua env) ──────────────
-TARGET_DIR="${TARGET_DIR:-.}"                                            # nơi cài
-MODULES="${MODULES:-bmm,tea,fci}"                                        # module cần cài
-TOOLS="${TOOLS:-claude-code}"                                            # IDE/tool
-CUSTOM_SOURCE="${CUSTOM_SOURCE:-https://github.com/vncharles/fci-bmad-kit}"
-CHANNEL="${CHANNEL:-stable}"                                             # stable | next
-BMAD_VERSION="${BMAD_VERSION:-latest}"                                   # pin bmad-method nếu cần
+SETUP_CODEGRAPH="${SETUP_CODEGRAPH:-1}"   # 1 = setup Codegraph sau khi cài BMad, 0 = bỏ qua
+RAW_BASE="${RAW_BASE:-https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main}"
 
-# ── Cấu hình agent ─────────────────────────────────────────────────────────────
-USER_NAME="${USER_NAME:-$(whoami)}"
-COMM_LANG="${COMM_LANG:-Vietnamese}"                                     # ngôn ngữ giao tiếp
-DOC_LANG="${DOC_LANG:-Vietnamese}"                                       # ngôn ngữ tài liệu xuất ra
-OUTPUT_FOLDER="${OUTPUT_FOLDER:-_bmad-output}"
-HANDOFF_FOLDER="${HANDOFF_FOLDER:-handoff}"                              # biến riêng của module fci
+# Thư mục chứa script này (rỗng nếu chạy qua `curl | bash`).
+HERE=""
+if [ -n "${BASH_SOURCE:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+  HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
 
-# ── Codegraph MCP (các agent đọc code dùng để duyệt code nhanh) ─────────────────
-SETUP_CODEGRAPH="${SETUP_CODEGRAPH:-1}"                                  # 1 = setup, 0 = bỏ qua
+# Forward chỉ những biến đã được set sang script con (giữ nguyên default của chúng).
+for v in TARGET_DIR MODULES TOOLS CUSTOM_SOURCE CHANNEL BMAD_VERSION \
+         USER_NAME COMM_LANG DOC_LANG OUTPUT_FOLDER HANDOFF_FOLDER \
+         AUTO_INSTALL_NODE NODE_VERSION NVM_VERSION; do
+  [ -n "${!v:-}" ] && export "$v"
+done
 
-echo "▶ Cài FCI BMad Kit (non-interactive)"
-echo "  dir=$TARGET_DIR  modules=$MODULES  tools=$TOOLS  channel=$CHANNEL"
-echo "  user=$USER_NAME  comm=$COMM_LANG  doc=$DOC_LANG  handoff=$HANDOFF_FOLDER"
-echo
+# Chạy một script con: ưu tiên file local, fallback tải từ RAW_BASE.
+run_step() {
+  local name="$1"
+  if [ -n "$HERE" ] && [ -f "$HERE/$name" ]; then
+    bash "$HERE/$name"
+  else
+    echo "▶ Tải $name từ $RAW_BASE"
+    curl -fsSL "$RAW_BASE/$name" | bash
+  fi
+}
 
-npx --yes "bmad-method@${BMAD_VERSION}" install \
-  --yes \
-  --directory "$TARGET_DIR" \
-  --modules "$MODULES" \
-  --tools "$TOOLS" \
-  --custom-source "$CUSTOM_SOURCE" \
-  --channel "$CHANNEL" \
-  --user-name "$USER_NAME" \
-  --communication-language "$COMM_LANG" \
-  --document-output-language "$DOC_LANG" \
-  --output-folder "$OUTPUT_FOLDER" \
-  --set "fci.fci_handoff_folder=$HANDOFF_FOLDER"
+run_step install-bmad.sh
 
-echo
-echo "✓ BMad đã cài xong."
-
-# ── Setup Codegraph MCP cho project ────────────────────────────────────────────
 if [ "$SETUP_CODEGRAPH" = "1" ]; then
-  PROJECT_PATH="$(cd "$TARGET_DIR" && pwd)"
   echo
-  echo "▶ Setup Codegraph MCP cho: $PROJECT_PATH"
-
-  # 1) Kiểm tra codegraph, cài nếu thiếu
-  if codegraph --version >/dev/null 2>&1; then
-    echo "  ✓ codegraph đã có: $(codegraph --version 2>&1 | head -n1)"
-  else
-    echo "  • Chưa có codegraph — đang cài: npm install -g codegraph"
-    npm install -g codegraph
-  fi
-
-  # 2) Init + status trong thư mục project
-  (
-    cd "$PROJECT_PATH"
-    echo "  • codegraph init"
-    codegraph init || echo "    ⚠ codegraph init lỗi/đã init trước đó — bỏ qua."
-    echo "  • codegraph status"
-    codegraph status || true
-  )
-
-  # 3) Đăng ký MCP server vào Claude Code
-  if command -v claude >/dev/null 2>&1; then
-    echo "  • claude mcp add codegraph"
-    claude mcp add codegraph -- codegraph serve --mcp --path "$PROJECT_PATH" \
-      || echo "    ⚠ Không add được (có thể đã tồn tại). Bỏ qua."
-  else
-    echo "  ⚠ Không tìm thấy CLI 'claude' — bỏ qua bước add MCP."
-    echo "    Chạy thủ công sau: claude mcp add codegraph -- codegraph serve --mcp --path \"$PROJECT_PATH\""
-  fi
-  echo "  ✓ Codegraph setup xong."
+  run_step install-codegraph.sh
 else
   echo
-  echo "• Bỏ qua setup Codegraph (SETUP_CODEGRAPH=$SETUP_CODEGRAPH)."
+  echo "• Bỏ qua setup Codegraph (SETUP_CODEGRAPH=0)."
 fi
 
 echo
-echo "✓ Xong. Dùng trong Claude Code: /fci-po  /fci-ba  /fci-dev  /fci-tester"
+echo "✓ Hoàn tất."
