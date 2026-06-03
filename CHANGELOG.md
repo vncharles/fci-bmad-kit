@@ -1,5 +1,19 @@
 # BMAD Kit — Changelog
 
+## [2.0.0] — 2026-06-03
+
+### Changed (BREAKING) — đóng gói lại thành BMad module cài được qua installer
+- Tái cấu trúc repo thành **BMad external module package** (`package.json` + `src/module.yaml` + `src/agents/`).
+  Giờ cài bằng cách dán git URL vào `npx bmad-method install` → chọn Custom module, thay vì copy file thủ công.
+- 4 agent chuyển từ **sparse override** trên agent của `bmm`/`tea` (`bmad-agent-pm`, `bmad-tea`, …)
+  thành **agent FCI độc lập**: `fci-po` (Thanh), `fci-ba` (Vanh), `fci-dev` (Hieu), `fci-tester` (Hanh).
+  Mỗi agent có persona riêng + menu trỏ tới skill của `bmm`/`tea`.
+- Slash command `/fci-*` giờ do installer sinh ra từ module, không còn là file rời trong `.claude/commands/`
+  (vốn bị `.gitignore` bỏ qua → không lên git → là một lý do bản cũ "không chạy được").
+
+### Prerequisites
+- Yêu cầu cài kèm `bmm` (built-in) và `tea` (external) để các menu skill resolve được.
+
 ## [1.0.0] — 2026-06-01
 
 ### Added

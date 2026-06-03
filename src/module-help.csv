@@ -1,0 +1,5 @@
+module,skill,display-name,menu-code,description,action,args,phase,preceded-by,followed-by,required,output-location,outputs
+FCI Process Kit,fci-po,Product Owner (Thanh),,Write PRD, create Epics, hand off to BA, review stories, sign off.,,,1-planning,,fci-ba,false,docs,prd|epics|po-to-ba handoff
+FCI Process Kit,fci-ba,Business Analyst (Vanh),,Turn PO handoff into INVEST user stories and hand off to Dev.,,,1-planning,fci-po,fci-dev,false,docs/stories,user stories|ba-to-dev handoff
+FCI Process Kit,fci-dev,Developer (Hieu),,Analyze with Codegraph, implement stories, hand off to Tester.,,,4-implementation,fci-ba,fci-tester,false,docs/tasks,implementation|dev-to-tester handoff
+FCI Process Kit,fci-tester,QA Tester (Hanh),,Write and execute test plan, report pass to PO or bug to Dev.,,,4-implementation,fci-dev,fci-po,false,docs/test-plans,test plan|sign-off or bug report
