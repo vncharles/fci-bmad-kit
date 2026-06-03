@@ -73,23 +73,30 @@ Handoff files (file-based, mặc định trong `handoff/`):
 
 ## Cấu trúc module (cho người maintain)
 
-Đây là một **BMad external module package**. Installer chỉ đọc thư mục `src/`:
+Đây là một **BMad custom module** cài qua git URL. Installer đọc `.claude-plugin/marketplace.json`
+để vào *discovery mode*, rồi resolver tìm `module.yaml` + `module-help.csv` ở **thư mục cha chung của
+các skill** (ở đây là `src/`):
 
 ```
 fci-bmad-kit/
-├── package.json                 # npm/git package manifest (name: fci-bmad-kit)
+├── .claude-plugin/
+│   └── marketplace.json         # BẮT BUỘC — liệt kê plugin "fci" + 4 skill (./src/fci-*)
+├── package.json                 # package manifest (name: fci-bmad-kit)
 ├── src/
 │   ├── module.yaml              # module manifest: code "fci" + 4 agent + install vars
 │   ├── module-help.csv          # bmad-help registry
-│   └── agents/
-│       ├── fci-po/{SKILL.md, customize.toml}
-│       ├── fci-ba/{SKILL.md, customize.toml}
-│       ├── fci-dev/{SKILL.md, customize.toml}
-│       └── fci-tester/{SKILL.md, customize.toml}
+│   ├── fci-po/{SKILL.md, customize.toml}
+│   ├── fci-ba/{SKILL.md, customize.toml}
+│   ├── fci-dev/{SKILL.md, customize.toml}
+│   └── fci-tester/{SKILL.md, customize.toml}
 ├── VERSION
 ├── CHANGELOG.md
 └── README.md
 ```
+
+> **Quan trọng:** thiếu `.claude-plugin/marketplace.json` thì installer chạy *direct mode* — chỉ
+> quét `SKILL.md` ở thư mục con cấp 1 của gốc repo, không thấy gì → báo *"0 installable modules"*.
+> Và `module.yaml`/`module-help.csv` PHẢI nằm cùng cấp cha chung của các skill liệt kê trong marketplace.
 
 - `SKILL.md` — persona cố định + activation steps của agent.
 - `customize.toml` — role, identity, principles, persistent_facts và **menu** (mỗi item trỏ tới `skill` hoặc `prompt`).

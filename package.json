@@ -19,6 +19,7 @@
   "license": "MIT",
   "author": "FCI",
   "files": [
-    "src"
+    "src",
+    ".claude-plugin"
   ]
 }
