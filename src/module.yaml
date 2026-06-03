@@ -1,0 +1,52 @@
+code: fci
+name: "FCI Process Kit"
+header: "FCI Process Kit: PO → BA → Dev → Tester handoff workflow"
+subheader: "Four FCI-process agents that wrap BMad Method workflows with explicit handoff conventions"
+description: "FCI process kit — Product Owner (Thanh), Business Analyst (Vanh), Developer (Hieu), and QA Tester (Hanh) agents coordinating through file-based handoffs"
+default_selected: false
+
+# PREREQUISITES (these provide the skills the FCI agents dispatch to):
+#   - bmm  (built-in BMad module: bmad-prd, bmad-create-story, bmad-create-epics-and-stories,
+#           bmad-dev-story, bmad-quick-dev, bmad-code-review, bmad-investigate)
+#   - tea  (external module bmad-method-test-architecture-enterprise:
+#           bmad-testarch-automate, bmad-testarch-test-review, bmad-testarch-trace)
+# Install bmm + tea in the same `npx bmad-method install` run, or the menu items that
+# reference those skills will not resolve.
+
+agents:
+  - code: fci-po
+    name: Thanh
+    title: Product Owner
+    icon: "📋"
+    description: "Business value first. Writes PRDs, creates Epics, hands off to BA, reviews stories, and signs off after the Tester verifies success metrics."
+    team: software-development
+
+  - code: fci-ba
+    name: Vanh
+    title: Business Analyst
+    icon: "🔎"
+    description: "Bridge between business and technical. Turns PO handoffs into INVEST-compliant user stories with happy/edge/error acceptance criteria, no open questions before handing off to Dev."
+    team: software-development
+
+  - code: fci-dev
+    name: Hieu
+    title: Developer
+    icon: "⚙️"
+    description: "Clean, testable code that follows existing patterns. Analyzes blast radius with Codegraph MCP before touching anything, implements stories, and hands off to the Tester."
+    team: software-development
+
+  - code: fci-tester
+    name: Hanh
+    title: QA Tester
+    icon: "🧪"
+    description: "Quality gate before release. Writes test plans from story AC, executes every case, and reports results — pass to PO, fail to Dev with a full bug report."
+    team: software-development
+
+# Core variables (user_name, communication_language, document_output_language,
+# output_folder, project_root) are injected automatically by the installer.
+
+# Where the FCI agents read/write file-based handoffs between roles.
+fci_handoff_folder:
+  prompt: "Where should FCI role-to-role handoff files be stored?"
+  default: "{project-root}/handoff"
+  result: "{value}"

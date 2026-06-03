@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "fci-bmad-kit",
+  "version": "2.0.0",
+  "description": "FCI process kit for BMad Method — 4 agents (PO Thanh → BA Vanh → Dev Hieu → Tester Hanh) wrapping BMad workflows with FCI handoff conventions",
+  "keywords": [
+    "bmad",
+    "bmad-module",
+    "fci",
+    "product-owner",
+    "business-analyst",
+    "developer",
+    "qa"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vncharles/fci-bmad-kit.git"
+  },
+  "license": "MIT",
+  "author": "FCI",
+  "files": [
+    "src"
+  ]
+}
