@@ -11,7 +11,7 @@
     {
       "name": "fci",
       "source": "./",
-      "description": "FCI process kit — Product Owner (Thanh), Business Analyst (Vanh), Developer (Hieu), and QA Tester (Hanh) agents coordinating through file-based handoffs. Requires bmm + tea for dispatched skills.",
+      "description": "FCI process kit — Product Owner (Thanh), Business Analyst (Vanh), Developer (Zitech), and QA Tester (Hanh) agents coordinating through file-based handoffs. Requires bmm + tea for dispatched skills.",
       "version": "2.0.0",
       "author": {
         "name": "FCI"

@@ -6,7 +6,7 @@ Một **BMad Method module** định nghĩa 4 agent theo quy trình FCI:
 |---|---|---|---|
 | `/fci-po` | Product Owner | Thanh | Viết PRD, tạo Epics, sign-off |
 | `/fci-ba` | Business Analyst | Vanh | Viết User Stories (INVEST) |
-| `/fci-dev` | Developer | Hieu | Implement + Codegraph MCP |
+| `/fci-dev` | Developer | Zitech | Implement + Codegraph MCP |
 | `/fci-tester` | QA Tester | Hanh | Test plan, execute, bug report |
 
 Cài trực tiếp qua BMad installer bằng cách **dán link git này** — không cần copy file thủ công.
@@ -109,7 +109,7 @@ Installer sẽ đọc [`src/module.yaml`](src/module.yaml), compile 4 agent vào
 ```
 /fci-po       → Thanh (Product Owner)
 /fci-ba       → Vanh (Business Analyst)
-/fci-dev      → Hieu (Developer)
+/fci-dev      → Zitech (Developer)
 /fci-tester   → Hanh (QA Tester)
 ```
 
@@ -118,7 +118,7 @@ Installer sẽ đọc [`src/module.yaml`](src/module.yaml), compile 4 agent vào
 ## Workflow
 
 ```
-PO (Thanh)  →  BA (Vanh)  →  Dev (Hieu)  →  Tester (Hanh)  →  PO sign-off
+PO (Thanh)  →  BA (Vanh)  →  Dev (Zitech)  →  Tester (Hanh)  →  PO sign-off
 ```
 
 Handoff files (file-based, mặc định trong `handoff/`):

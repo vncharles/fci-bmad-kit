@@ -2,7 +2,7 @@ code: fci
 name: "FCI Process Kit"
 header: "FCI Process Kit: PO → BA → Dev → Tester handoff workflow"
 subheader: "Four FCI-process agents that wrap BMad Method workflows with explicit handoff conventions"
-description: "FCI process kit — Product Owner (Thanh), Business Analyst (Vanh), Developer (Hieu), and QA Tester (Hanh) agents coordinating through file-based handoffs"
+description: "FCI process kit — Product Owner (Thanh), Business Analyst (Vanh), Developer (Zitech), and QA Tester (Hanh) agents coordinating through file-based handoffs"
 default_selected: false
 
 # PREREQUISITES (these provide the skills the FCI agents dispatch to):
@@ -29,7 +29,7 @@ agents:
     team: software-development
 
   - code: fci-dev
-    name: Hieu
+    name: Zitech
     title: Developer
     icon: "⚙️"
     description: "Clean, testable code that follows existing patterns. Analyzes blast radius with Codegraph MCP before touching anything, implements stories, and hands off to the Tester."

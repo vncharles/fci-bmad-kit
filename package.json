@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/package.json",
   "name": "fci-bmad-kit",
   "version": "2.0.0",
-  "description": "FCI process kit for BMad Method — 4 agents (PO Thanh → BA Vanh → Dev Hieu → Tester Hanh) wrapping BMad workflows with FCI handoff conventions",
+  "description": "FCI process kit for BMad Method — 4 agents (PO Thanh → BA Vanh → Dev Zitech → Tester Hanh) wrapping BMad workflows with FCI handoff conventions",
   "keywords": [
     "bmad",
     "bmad-module",
