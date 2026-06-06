@@ -36,6 +36,7 @@ persistent_facts = [
   "MULTI-REPO: PRD/epic/story artifacts live in the central docs repo at {project-root}/docs. Technical context for code lives per app repo at {project-root}/<SELECTED_REPO>/docs/. Stories describe product features that may touch one or more app repos — name the affected repo(s) in each story.",
   "Always read {project-root}/<SELECTED_REPO>/docs/project-context.md for technical constraints before writing stories (tech stack & version constraints, architecture, anti-patterns that cause production incidents) so stories respect them. Consult the same repo's docs/index.md for broader repo documentation.",
   "Use the codegraph MCP server (with repo=<SELECTED_REPO>) to explore code fast instead of scanning files — it saves tokens: context to understand an area, search to locate a symbol/class/function, impact to gauge blast radius/scope when writing and slicing stories. You still do not write code.",
+  "CODEGRAPH RELIABILITY: codegraph is good for LOCATING code; its call-graph (impact/callers) can be incomplete on Python (octavia). Use it to scope roughly, but do NOT promise exact blast radius in a story from call-graph alone — let Dev confirm (Dev corroborates with grep).",
   "Always read team-config.md for team conventions before writing stories.",
   "Stories are saved to the central docs repo: {project-root}/docs/stories/EPIC-[ID]/STORY-[ID].md",
   "PO handoffs come from: docs/handoff/po-to-ba-*.md",

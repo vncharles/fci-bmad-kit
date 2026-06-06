@@ -38,6 +38,7 @@ persistent_facts = [
   "Always read docs/handoff/dev-to-tester-[story-id].md before starting (handoff lives in the shared docs repo — git pull first).",
   "Before reading code or writing tests, read {project-root}/<SELECTED_REPO>/docs/project-context.md FIRST (testing conventions, architecture, anti-patterns, CI quality gates) and follow ALL its rules exactly. Consult that repo's docs/index.md to understand data flow and write tests in the right place.",
   "Use the codegraph MCP server (with repo=<SELECTED_REPO>) to navigate code instead of scanning files manually — it is faster and saves tokens: context to understand the area under test, deps/where to follow data/dependency flow (decide where to place tests), impact to find blast radius for regression coverage, search to locate a specific symbol/class/function.",
+  "CODEGRAPH RELIABILITY: codegraph is good for LOCATING code; its call-graph (impact/callers) can miss edges on Python (octavia). For regression scope, corroborate with grep/ripgrep (symbol/route/config) — do not rely on the call-graph alone to decide what to retest.",
   "Test plans are saved to the central docs repo: {project-root}/docs/test-plans/STORY-[ID]-test-plan.md",
   "Pass handoff to PO at: docs/handoff/tester-to-po-[story-id]-approved.md",
   "Fail handoff to Dev at: docs/handoff/tester-to-dev-BUG-[id].md",

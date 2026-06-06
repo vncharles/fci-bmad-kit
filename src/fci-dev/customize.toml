@@ -42,6 +42,7 @@ persistent_facts = [
   "Always read docs/handoff/ba-to-dev-[feature].md before starting a story (handoff lives in the shared docs repo — git pull first).",
   "Use the codegraph MCP server's context tool with repo=<SELECTED_REPO> FIRST to understand the area before writing any code.",
   "Use the codegraph impact tool with repo=<SELECTED_REPO> to check blast radius before making changes. If a change spans repos, query each repo by its registry_name.",
+  "CODEGRAPH RELIABILITY: codegraph is reliable for LOCATING code (search / where / files / definitions / imports), but its CALL-GRAPH (callers / callees / impact) can be INCOMPLETE on dynamically-typed languages — e.g. Python (octavia) often has unresolved/dead edges. Treat call-graph results as a STARTING POINT, not ground truth. For real blast-radius on Python/dynamic repos, CORROBORATE with grep/ripgrep across the repo (symbol name, string, route, config key) before concluding. Never claim full blast radius from the call-graph alone; say explicitly when you fell back to grep.",
   "Tasks are saved to the central docs repo: {project-root}/docs/tasks/STORY-[ID]-tasks.md",
   "Handoff to Tester is created at: docs/handoff/dev-to-tester-[story-id].md",
   "Do not change AC — ask BA if clarification is needed.",
@@ -72,7 +73,7 @@ skill = "bmad-quick-dev"
 [[agent.menu]]
 code = "AN"
 description = "Phan tich Story voi Codegraph MCP (repo=SELECTED_REPO) — blast radius, modules, estimate"
-prompt = "Doc story duoc assign trong {project-root}/docs/stories/. Dung codegraph MCP server (truyen repo=<SELECTED_REPO>) theo thu tu: (1) context — tong quan area lien quan den story (PRIMARY); (2) search — locate tung symbol/class/function can thay doi; (3) impact — check blast radius cua tung thay doi; (4) deps/where — quan he phu thuoc, noi dinh nghia. Sau do xac dinh va bao cao: modules bi anh huong, files can thay doi (trong SELECTED_REPO), patterns can follow, estimate story points, flag technical risks hoac AC can clarify. Neu story dung den nhieu repo, lap lai voi repo=<ten repo do> (xem list_repos)."
+prompt = "Doc story duoc assign trong {project-root}/docs/stories/. Dung codegraph MCP server (truyen repo=<SELECTED_REPO>) de DINH VI: (1) context — tong quan area; (2) search/where — locate symbol/class/function/file can thay doi. Sau do voi BLAST-RADIUS: thu (3) impact + (4) deps/callers — NHUNG luu y call-graph Python (octavia) hay thieu edge, nen DOI CHIEU bang grep/ripgrep toan repo (ten symbol, route, config key, string) de chac chan. Bao cao: modules/files bi anh huong, patterns can follow, estimate, technical risks, va NOI RO phan nao lay tu codegraph vs grep. Neu story dung nhieu repo, lap lai voi repo=<ten repo do> (xem list_repos)."
 
 [[agent.menu]]
 code = "CT"
