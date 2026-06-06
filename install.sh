@@ -50,13 +50,22 @@ run_step() {
 
 # ── MULTI-REPO mode: ủy quyền hoàn toàn cho init-workspace.sh ─────────────────────
 if [ "$WORKSPACE_MODE" = "1" ]; then
-  # init-workspace.sh cần source install-codegraph.sh nên phải chạy từ file local.
-  if [ -z "$HERE" ] || [ ! -f "$HERE/init-workspace.sh" ]; then
-    echo "✗ WORKSPACE_MODE cần chạy local (clone repo này rồi ./install.sh)." >&2
-    echo "  curl|bash không hỗ trợ workspace mode vì script tương tác + source lẫn nhau." >&2
-    exit 1
+  if [ -n "$HERE" ] && [ -f "$HERE/init-workspace.sh" ]; then
+    # Chạy local (đã clone kit).
+    bash "$HERE/init-workspace.sh"
+  else
+    # curl | bash: tải các script cần thiết về thư mục tạm rồi chạy.
+    # (init-workspace.sh source install-codegraph.sh và gọi install-bmad.sh nên cần cả 3.)
+    # Prompt đọc từ /dev/tty nên vẫn tương tác bình thường qua pipe.
+    TMP="$(mktemp -d)"
+    trap 'rm -rf "$TMP"' EXIT
+    echo "▶ Tải scripts về $TMP từ $RAW_BASE"
+    for s in init-workspace.sh install-codegraph.sh install-bmad.sh; do
+      curl -fsSL "$RAW_BASE/$s" -o "$TMP/$s" || { echo "✗ Tải $s thất bại." >&2; exit 1; }
+    done
+    chmod +x "$TMP"/*.sh
+    bash "$TMP/init-workspace.sh"
   fi
-  bash "$HERE/init-workspace.sh"
   echo
   echo "✓ Hoàn tất (workspace mode)."
   exit 0

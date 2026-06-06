@@ -126,11 +126,22 @@ Dự án gồm nhiều repo (vd LBaaS: repo `docs` chứa PRD/epic/story của c
 không cần chung máy.
 
 ```bash
-# clone kit này về, rồi từ thư mục workspace (rỗng):
+# Cách 1 — KHÔNG cần clone kit: chạy thẳng từ thư mục workspace (rỗng) của bạn
+WORKSPACE_MODE=1 \
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main/install.sh)"
+
+# Cách 2 — đã clone kit về:
 WORKSPACE_MODE=1 TARGET_DIR=/path/to/workspace ./install.sh
 # hoặc gọi thẳng:
-ROLE=dev ./init-workspace.sh        # ROLE: po | ba | dev | tester
+./init-workspace.sh
 ```
+
+Script sẽ **hỏi vai trò ngay khi chạy** (menu 1=PO · 2=BA · 3=Dev · 4=Tester) — không cần khai báo trước.
+Muốn bỏ qua bước hỏi thì đặt sẵn `ROLE=dev` (po|ba|dev|tester) trước lệnh.
+
+> One-liner vẫn **tương tác bình thường** (prompt đọc từ `/dev/tty`); nó tự tải `init-workspace.sh`
+> + `install-codegraph.sh` + `install-bmad.sh` về thư mục tạm rồi chạy. Workspace mặc định là thư mục
+> hiện tại — `cd` vào thư mục workspace trống trước khi chạy, hoặc đặt `TARGET_DIR`.
 
 `init-workspace.sh` (tương tác — **phải chạy local**, không hỗ trợ `curl | bash`):
 

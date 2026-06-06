@@ -142,8 +142,26 @@ current_branch() { git -C "$WORKSPACE_ROOT/$1" rev-parse --abbrev-ref HEAD 2>/de
 # ── Bắt đầu ──────────────────────────────────────────────────────────────────────
 echo "▶ FCI workspace: $WORKSPACE_NAME   (root = $WORKSPACE_ROOT)"
 
-# Role → quyết định có clone code + codegraph không.
-if [ -z "$ROLE" ]; then ROLE="$(ask "Vai trò của bạn (po/ba/dev/tester)" "dev")"; fi
+# Role → quyết định có clone code + codegraph không. Hỏi bằng menu nếu chưa set qua env.
+if [ -z "$ROLE" ]; then
+  {
+    echo "  Bạn là vai trò nào?"
+    echo "    1) PO     — Product Owner   (chỉ clone docs)"
+    echo "    2) BA     — Business Analyst (docs + code + codegraph)"
+    echo "    3) Dev    — Developer        (docs + code + codegraph)"
+    echo "    4) Tester — QA Tester        (docs + code + codegraph)"
+  } >&2
+  while :; do
+    sel="$(ask "Chọn (1-4)" "")"
+    case "$sel" in
+      1|po|PO)         ROLE=po; break ;;
+      2|ba|BA)         ROLE=ba; break ;;
+      3|dev|DEV)       ROLE=dev; break ;;
+      4|tester|TESTER) ROLE=tester; break ;;
+      *) echo "    ⚠ Nhập 1, 2, 3 hoặc 4." >&2 ;;
+    esac
+  done
+fi
 ROLE="$(echo "$ROLE" | tr '[:upper:]' '[:lower:]')"
 case "$ROLE" in
   po)            CLONE_CODE=0 ;;
