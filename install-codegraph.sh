@@ -1,24 +1,36 @@
 #!/usr/bin/env bash
 #
-# FCI BMad Kit — setup Codegraph MCP cho project. Standalone, chạy độc lập được.
+# FCI BMad Kit — setup Codegraph MCP (@optave/codegraph). Standalone HOẶC source được.
 #
-# Các agent đọc code (dev/ba/tester) dùng Codegraph để duyệt code nhanh, tiết kiệm token.
-# Script: kiểm tra codegraph → cài nếu thiếu → init + status → add MCP vào Claude Code.
+# Dùng @optave/codegraph (https://github.com/optave/ops-codegraph-tool) — hỗ trợ MULTI-REPO
+# native: build từng repo (tự đăng ký vào registry chung), rồi chạy MỘT MCP server
+# `codegraph mcp --multi-repo` phục vụ tất cả repo (mọi tool có thêm param `repo`).
 #
-# Dùng:
-#   ./install-codegraph.sh
-#   TARGET_DIR=/path/to/project ./install-codegraph.sh
+# Hai cách dùng:
+#   1) Standalone (single-repo, tương thích ngược):
+#        ./install-codegraph.sh
+#        TARGET_DIR=/path/to/project ./install-codegraph.sh
+#      → build repo + add MCP server "codegraph" (single-repo mode) cho TARGET_DIR.
+#
+#   2) Source làm thư viện (dùng bởi init-workspace.sh cho multi-repo):
+#        source install-codegraph.sh
+#        cg_require_node
+#        cg_install_cli
+#        setup_codegraph_for_repo "/abs/path/to/repo" "<registry-name>"   # build + register
+#        register_multirepo_mcp                                            # 1 MCP cho cả workspace
 #
 # Mọi giá trị dưới đây đều override được bằng biến môi trường.
 
 set -euo pipefail
 
-# ── Preflight: cần Node (để `npm install -g codegraph`) ─────────────────────────
+CODEGRAPH_PKG="${CODEGRAPH_PKG:-@optave/codegraph}"   # npm package cung cấp bin `codegraph`
+
+# ── Preflight: cần Node (để cài codegraph qua npm) ──────────────────────────────
 AUTO_INSTALL_NODE="${AUTO_INSTALL_NODE:-1}"   # 1 = tự cài Node qua nvm nếu thiếu/cũ
 NODE_VERSION="${NODE_VERSION:-20}"            # major version Node muốn cài
 NVM_VERSION="${NVM_VERSION:-v0.40.1}"         # tag nvm dùng để bootstrap
 
-node_ok() {
+cg_node_ok() {
   command -v node >/dev/null 2>&1 || return 1
   local v major rest minor
   v="$(node -p 'process.versions.node' 2>/dev/null)" || return 1
@@ -26,7 +38,7 @@ node_ok() {
   [ "$major" -gt 20 ] || { [ "$major" -eq 20 ] && [ "$minor" -ge 12 ]; }
 }
 
-bootstrap_node_via_nvm() {
+cg_bootstrap_node_via_nvm() {
   export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
   if [ ! -s "$NVM_DIR/nvm.sh" ]; then
     echo "  • Chưa có nvm — cài nvm $NVM_VERSION vào $NVM_DIR"
@@ -39,8 +51,8 @@ bootstrap_node_via_nvm() {
   nvm use "$NODE_VERSION"
 }
 
-require_node() {
-  if node_ok; then return 0; fi
+cg_require_node() {
+  if cg_node_ok; then return 0; fi
   if command -v node >/dev/null 2>&1; then
     echo "✗ Node $(node -p 'process.versions.node') quá cũ — cần >=20.12." >&2
   else
@@ -51,44 +63,81 @@ require_node() {
     exit 1
   fi
   echo "▶ AUTO_INSTALL_NODE=1 — đang tự cài Node $NODE_VERSION qua nvm..."
-  bootstrap_node_via_nvm
-  node_ok || { echo "✗ Vẫn chưa có Node hợp lệ. Mở terminal mới, 'nvm use $NODE_VERSION' rồi thử lại." >&2; exit 1; }
+  cg_bootstrap_node_via_nvm
+  cg_node_ok || { echo "✗ Vẫn chưa có Node hợp lệ. Mở terminal mới, 'nvm use $NODE_VERSION' rồi thử lại." >&2; exit 1; }
 }
 
-# ── Lựa chọn ───────────────────────────────────────────────────────────────────
-TARGET_DIR="${TARGET_DIR:-.}"                 # project để setup codegraph
-PROJECT_PATH="$(cd "$TARGET_DIR" && pwd)"     # đường dẫn tuyệt đối
+# ── Cài codegraph CLI (@optave/codegraph) ───────────────────────────────────────
+cg_install_cli() {
+  # Gỡ bin `codegraph` cũ (package unscoped khác) nếu có — tránh xung đột tên bin.
+  if npm ls -g codegraph >/dev/null 2>&1; then
+    echo "  • Gỡ package 'codegraph' cũ (xung đột bin) — npm uninstall -g codegraph"
+    npm uninstall -g codegraph || true
+  fi
+  # Cài đúng phiên bản @optave nếu chưa có hoặc đang là bin khác.
+  if codegraph --version >/dev/null 2>&1 && npm ls -g "$CODEGRAPH_PKG" >/dev/null 2>&1; then
+    echo "  ✓ codegraph ($CODEGRAPH_PKG) đã có: $(codegraph --version 2>&1 | head -n1)"
+  else
+    echo "  • Cài codegraph: npm install -g $CODEGRAPH_PKG"
+    npm install -g "$CODEGRAPH_PKG"
+  fi
+}
 
-require_node
+# ── Build index cho MỘT repo + đăng ký vào registry chung ────────────────────────
+# setup_codegraph_for_repo <abs-repo-path> [registry-name]
+setup_codegraph_for_repo() {
+  local repo_path="$1"
+  local name="${2:-$(basename "$repo_path")}"
 
-echo "▶ Setup Codegraph MCP cho: $PROJECT_PATH"
+  echo "▶ Codegraph build cho repo: $repo_path  (registry name: $name)"
+  # build tự đăng ký project vào registry chung; chỉ định tên cho chắc chắn.
+  codegraph build "$repo_path" || echo "    ⚠ codegraph build lỗi — bỏ qua."
+  codegraph registry add "$repo_path" -n "$name" \
+    || echo "    ⚠ registry add '$name' (có thể đã tồn tại) — bỏ qua."
+}
 
-# 1) Kiểm tra codegraph, cài nếu thiếu
-if codegraph --version >/dev/null 2>&1; then
-  echo "  ✓ codegraph đã có: $(codegraph --version 2>&1 | head -n1)"
-else
-  echo "  • Chưa có codegraph — đang cài: npm install -g codegraph"
-  npm install -g codegraph
+# ── Đăng ký MỘT MCP server multi-repo cho cả workspace ──────────────────────────
+register_multirepo_mcp() {
+  if command -v claude >/dev/null 2>&1; then
+    echo "  • claude mcp add codegraph (multi-repo)"
+    claude mcp remove codegraph >/dev/null 2>&1 || true   # xoá entry cũ (single-mode) nếu có
+    claude mcp add codegraph -- codegraph mcp --multi-repo \
+      || echo "    ⚠ Không add được MCP 'codegraph'. Chạy thủ công: claude mcp add codegraph -- codegraph mcp --multi-repo"
+  else
+    echo "  ⚠ Không tìm thấy CLI 'claude' — bỏ qua bước add MCP."
+    echo "    Chạy thủ công sau: claude mcp add codegraph -- codegraph mcp --multi-repo"
+  fi
+}
+
+# ── Đăng ký MCP single-repo (dùng cho standalone) ───────────────────────────────
+register_singlerepo_mcp() {
+  if command -v claude >/dev/null 2>&1; then
+    echo "  • claude mcp add codegraph (single-repo)"
+    claude mcp add codegraph -- codegraph mcp \
+      || echo "    ⚠ Không add được (có thể đã tồn tại). Bỏ qua."
+  else
+    echo "  ⚠ Không tìm thấy CLI 'claude' — bỏ qua bước add MCP."
+    echo "    Chạy thủ công sau: claude mcp add codegraph -- codegraph mcp"
+  fi
+}
+
+# ── Main: chỉ chạy khi gọi trực tiếp (không chạy khi được `source`) ──────────────
+cg_main() {
+  TARGET_DIR="${TARGET_DIR:-.}"
+  local project_path
+  project_path="$(cd "$TARGET_DIR" && pwd)"
+
+  cg_require_node
+  echo "▶ Setup Codegraph MCP cho: $project_path"
+  cg_install_cli
+  setup_codegraph_for_repo "$project_path"
+  register_singlerepo_mcp
+
+  echo
+  echo "✓ Codegraph setup xong."
+}
+
+# BASH_SOURCE[0] == $0 nghĩa là file đang được thực thi trực tiếp, không phải source.
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+  cg_main
 fi
-
-# 2) Init + status trong thư mục project
-(
-  cd "$PROJECT_PATH"
-  echo "  • codegraph init"
-  codegraph init || echo "    ⚠ codegraph init lỗi/đã init trước đó — bỏ qua."
-  echo "  • codegraph status"
-  codegraph status || true
-)
-
-# 3) Đăng ký MCP server vào Claude Code
-if command -v claude >/dev/null 2>&1; then
-  echo "  • claude mcp add codegraph"
-  claude mcp add codegraph -- codegraph serve --mcp --path "$PROJECT_PATH" \
-    || echo "    ⚠ Không add được (có thể đã tồn tại). Bỏ qua."
-else
-  echo "  ⚠ Không tìm thấy CLI 'claude' — bỏ qua bước add MCP."
-  echo "    Chạy thủ công sau: claude mcp add codegraph -- codegraph serve --mcp --path \"$PROJECT_PATH\""
-fi
-
-echo
-echo "✓ Codegraph setup xong."

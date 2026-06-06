@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 #
-# FCI BMad Kit — orchestrator: chạy cả 2 bước.
+# FCI BMad Kit — orchestrator.
+#
+# SINGLE-REPO mode (mặc định): cài BMad + Codegraph vào một repo.
 #   1) install-bmad.sh        — cài BMad (bmm + tea + fci) cho claude-code
 #   2) install-codegraph.sh   — setup Codegraph MCP (bỏ qua nếu SETUP_CODEGRAPH=0)
 #
-# Muốn chạy riêng từng phần thì gọi thẳng install-bmad.sh / install-codegraph.sh.
+# MULTI-REPO mode (WORKSPACE_MODE=1): khởi tạo workspace nhiều repo qua init-workspace.sh.
+#
+# Muốn chạy riêng từng phần thì gọi thẳng init-workspace.sh / install-bmad.sh / install-codegraph.sh.
 #
 # Dùng:
-#   ./install.sh                                  # chạy local
-#   curl -fsSL .../install.sh | bash              # chạy qua mạng (tự tải 2 script con)
+#   ./install.sh                                  # single-repo, chạy local
+#   WORKSPACE_MODE=1 ./install.sh                 # multi-repo workspace (tương tác)
+#   curl -fsSL .../install.sh | bash              # chạy qua mạng (tự tải script con)
 #   SETUP_CODEGRAPH=0 ./install.sh                # chỉ cài BMad
 #   TARGET_DIR=/path USER_NAME="Trong" ./install.sh
 
 set -euo pipefail
 
+WORKSPACE_MODE="${WORKSPACE_MODE:-0}"     # 1 = multi-repo workspace, 0 = single-repo
 SETUP_CODEGRAPH="${SETUP_CODEGRAPH:-1}"   # 1 = setup Codegraph sau khi cài BMad, 0 = bỏ qua
 RAW_BASE="${RAW_BASE:-https://raw.githubusercontent.com/vncharles/fci-bmad-kit/main}"
 
@@ -26,6 +32,7 @@ fi
 # Forward chỉ những biến đã được set sang script con (giữ nguyên default của chúng).
 for v in TARGET_DIR MODULES TOOLS CUSTOM_SOURCE CHANNEL BMAD_VERSION \
          USER_NAME COMM_LANG DOC_LANG OUTPUT_FOLDER HANDOFF_FOLDER \
+         WORKSPACE_NAME SETUP_BMAD \
          AUTO_INSTALL_NODE NODE_VERSION NVM_VERSION; do
   [ -n "${!v:-}" ] && export "$v"
 done
@@ -41,6 +48,21 @@ run_step() {
   fi
 }
 
+# ── MULTI-REPO mode: ủy quyền hoàn toàn cho init-workspace.sh ─────────────────────
+if [ "$WORKSPACE_MODE" = "1" ]; then
+  # init-workspace.sh cần source install-codegraph.sh nên phải chạy từ file local.
+  if [ -z "$HERE" ] || [ ! -f "$HERE/init-workspace.sh" ]; then
+    echo "✗ WORKSPACE_MODE cần chạy local (clone repo này rồi ./install.sh)." >&2
+    echo "  curl|bash không hỗ trợ workspace mode vì script tương tác + source lẫn nhau." >&2
+    exit 1
+  fi
+  bash "$HERE/init-workspace.sh"
+  echo
+  echo "✓ Hoàn tất (workspace mode)."
+  exit 0
+fi
+
+# ── SINGLE-REPO mode (mặc định) ──────────────────────────────────────────────────
 run_step install-bmad.sh
 
 if [ "$SETUP_CODEGRAPH" = "1" ]; then

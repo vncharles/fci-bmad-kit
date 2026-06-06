@@ -88,10 +88,25 @@ DOC_LANG="${DOC_LANG:-Vietnamese}"                                       # ngôn
 OUTPUT_FOLDER="${OUTPUT_FOLDER:-_bmad-output}"
 HANDOFF_FOLDER="${HANDOFF_FOLDER:-handoff}"                              # biến riêng của module fci
 
+# ── Override path artifacts (chỉ dùng ở MULTI-REPO mode — để trống = giữ default BMad) ──
+# init-workspace.sh set các biến này trỏ vào repo docs trung tâm.
+PROJECT_KNOWLEDGE="${PROJECT_KNOWLEDGE:-}"     # vd "{project-root}/docs"
+PLANNING_ARTIFACTS="${PLANNING_ARTIFACTS:-}"   # vd "{project-root}/docs"
+IMPL_ARTIFACTS="${IMPL_ARTIFACTS:-}"           # vd "{project-root}/docs"
+WORKSPACE_FILE_REL="${WORKSPACE_FILE_REL:-}"   # vd "workspace.yml" → fci.fci_workspace_file
+
 echo "▶ Cài FCI BMad Kit (non-interactive)"
 echo "  dir=$TARGET_DIR  modules=$MODULES  tools=$TOOLS  channel=$CHANNEL"
 echo "  user=$USER_NAME  comm=$COMM_LANG  doc=$DOC_LANG  handoff=$HANDOFF_FOLDER"
+if [ -n "$WORKSPACE_FILE_REL" ]; then echo "  workspace=$WORKSPACE_FILE_REL  knowledge=$PROJECT_KNOWLEDGE"; fi
 echo
+
+# Gom các --set tùy chọn (chỉ thêm khi biến không rỗng).
+SET_ARGS=( --set "fci.fci_handoff_folder=$HANDOFF_FOLDER" )
+if [ -n "$WORKSPACE_FILE_REL" ]; then SET_ARGS+=( --set "fci.fci_workspace_file={project-root}/$WORKSPACE_FILE_REL" ); fi
+if [ -n "$PROJECT_KNOWLEDGE" ];  then SET_ARGS+=( --set "bmm.project_knowledge=$PROJECT_KNOWLEDGE" ); fi
+if [ -n "$PLANNING_ARTIFACTS" ]; then SET_ARGS+=( --set "bmm.planning_artifacts=$PLANNING_ARTIFACTS" ); fi
+if [ -n "$IMPL_ARTIFACTS" ];     then SET_ARGS+=( --set "bmm.implementation_artifacts=$IMPL_ARTIFACTS" ); fi
 
 npx --yes "bmad-method@${BMAD_VERSION}" install \
   --yes \
@@ -104,7 +119,7 @@ npx --yes "bmad-method@${BMAD_VERSION}" install \
   --communication-language "$COMM_LANG" \
   --document-output-language "$DOC_LANG" \
   --output-folder "$OUTPUT_FOLDER" \
-  --set "fci.fci_handoff_folder=$HANDOFF_FOLDER"
+  "${SET_ARGS[@]}"
 
 echo
 echo "✓ BMad đã cài xong. Dùng trong Claude Code: /fci-po  /fci-ba  /fci-dev  /fci-tester"

@@ -32,9 +32,10 @@ Có 3 script ở gốc repo:
 
 | Script | Việc |
 |---|---|
-| [`install.sh`](install.sh) | Orchestrator — chạy cả 2 bước dưới |
+| [`install.sh`](install.sh) | Orchestrator — single-repo (mặc định) hoặc multi-repo (`WORKSPACE_MODE=1`) |
+| [`init-workspace.sh`](init-workspace.sh) | **Multi-repo** — clone nhiều repo vào 1 workspace + codegraph + BMad |
 | [`install-bmad.sh`](install-bmad.sh) | Chỉ cài BMad (bmm + tea + fci) cho IDE claude-code |
-| [`install-codegraph.sh`](install-codegraph.sh) | Chỉ setup Codegraph MCP cho project |
+| [`install-codegraph.sh`](install-codegraph.sh) | Chỉ setup Codegraph MCP cho project (hoặc source làm thư viện) |
 
 **Cài tất cả (1 lệnh):**
 
@@ -77,12 +78,14 @@ CHANNEL="stable" \
 | `OUTPUT_FOLDER` | `_bmad-output` | Thư mục output |
 | `HANDOFF_FOLDER` | `handoff` | Nơi lưu handoff giữa các role |
 | `SETUP_CODEGRAPH` | `1` | `1` = tự cài & setup Codegraph MCP, `0` = bỏ qua |
+| `WORKSPACE_MODE` | `0` | `1` = multi-repo workspace (ủy quyền cho `init-workspace.sh`) |
+| `WORKSPACE_NAME` | tên thư mục | Tên workspace ghi vào `workspace.yml` (multi-repo) |
 | `AUTO_INSTALL_NODE` | `1` | `1` = tự cài Node qua nvm nếu thiếu/cũ, `0` = chỉ báo lỗi |
 | `NODE_VERSION` | `20` | Major Node sẽ cài khi auto-install |
 
 > **Node:** bmad-method 6.8+ cần Node `>=20.12`. Script tự kiểm tra; nếu máy **chưa có Node hoặc Node quá cũ**, mặc định nó **tự cài Node qua nvm** (cài luôn nvm vào `$HOME` nếu chưa có — user-space, không cần sudo). Muốn tự quản lý Node thì đặt `AUTO_INSTALL_NODE=0`.
 >
-> Sau đó script chạy `npx bmad-method install` (đầy đủ flag non-interactive), rồi **setup Codegraph MCP** cho project: kiểm tra `codegraph --version` → `npm install -g codegraph` nếu thiếu → `codegraph init` + `codegraph status` → `claude mcp add codegraph -- codegraph serve --mcp --path <project>`. Các agent đọc code (dev/ba/tester) dùng Codegraph để duyệt code nhanh; nếu không cần, đặt `SETUP_CODEGRAPH=0`.
+> Sau đó script chạy `npx bmad-method install` (đầy đủ flag non-interactive), rồi **setup Codegraph MCP** cho project: cài [`@optave/codegraph`](https://github.com/optave/ops-codegraph-tool) (gỡ package `codegraph` cũ nếu xung đột bin) → `codegraph build <project>` → `claude mcp add codegraph -- codegraph mcp`. Các agent đọc code (dev/ba/tester) dùng Codegraph để duyệt code nhanh; nếu không cần, đặt `SETUP_CODEGRAPH=0`.
 
 ### Cách 2 — Cài tương tác (qua BMad installer)
 
@@ -115,19 +118,93 @@ Installer sẽ đọc [`src/module.yaml`](src/module.yaml), compile 4 agent vào
 
 ---
 
+## Multi-repo workspace mode (team)
+
+Dành cho **đội người thật**: PO, BA, Dev, Tester — mỗi người một máy, chỉ dùng agent của mình.
+Dự án gồm nhiều repo (vd LBaaS: repo `docs` chứa PRD/epic/story của cả dịch vụ + các app repo
+`octavia`, `octavia-dashboard`, ...). **Điều phối giữa các vai diễn ra QUA GIT trên repo `docs` chung** —
+không cần chung máy.
+
+```bash
+# clone kit này về, rồi từ thư mục workspace (rỗng):
+WORKSPACE_MODE=1 TARGET_DIR=/path/to/workspace ./install.sh
+# hoặc gọi thẳng:
+ROLE=dev ./init-workspace.sh        # ROLE: po | ba | dev | tester
+```
+
+`init-workspace.sh` (tương tác — **phải chạy local**, không hỗ trợ `curl | bash`):
+
+1. Hỏi **role**. Clone repo **`docs`** (bắt buộc, tên cố định, **không** codegraph).
+2. Tạo/đọc **`docs/workspace.yml`** — registry repo của dự án, **nằm trong repo docs** để share qua git.
+3. **App repo**: với mỗi repo đã khai báo trong registry → hỏi clone về; và cho **khai báo repo mới**
+   (tên + URL + branch). Khi clone code: `codegraph build <repo>` (tự đăng ký vào registry chung của codegraph).
+4. Nếu có ≥1 app repo build: đăng ký **một** MCP `claude mcp add codegraph -- codegraph mcp --multi-repo`.
+5. Cài BMad ở **workspace root**, trỏ artifacts + handoff vào repo `docs`.
+6. Hỏi commit & push `docs/workspace.yml` lên GitLab cho cả đội (bán tự động).
+
+**Clone theo role** (PO không cần đọc code; BA cần hiểu ràng buộc kỹ thuật nên cũng clone code):
+
+| Role | Clone | Codegraph |
+|---|---|---|
+| PO | chỉ `docs` | không |
+| BA / Dev / Tester | `docs` + app repo | có |
+
+> Codegraph = [`@optave/codegraph`](https://github.com/optave/ops-codegraph-tool) (multi-repo native):
+> một MCP server phục vụ mọi repo đã build, mỗi tool có param `repo` + tool `list_repos`.
+> Yêu cầu: máy đã **login GitLab sẵn**. Script chỉ `git clone`/`git pull`.
+
+> **Dùng cho dự án/team khác:** copy [`workspace.template.yml`](workspace.template.yml) vào repo docs,
+> đổi tên thành `workspace.yml`, sửa URL/branch các repo, rồi push. Người sau chỉ dán URL repo docs một
+> lần — script đọc manifest và tự clone phần còn lại (không phải nhập lại từng link).
+
+Layout kết quả (mọi thứ share đều nằm **trong repo `docs`**):
+
+```
+<workspace>/
+├── _bmad/                 # BMad + module fci (cài 1 lần ở workspace root)
+├── docs/                  # REPO docs — HUB CHIA SẺ (share qua git)
+│   ├── workspace.yml      #   registry repo của dự án
+│   ├── handoff/           #   handoff giữa các role
+│   └── prd/ epics/ stories/ tasks/ test-plans/
+├── octavia/               # app repo + docs/project-context.md + .codegraph/  (registry: octavia)
+└── octavia-dashboard/     # app repo + docs/project-context.md + .codegraph/  (registry: octavia-dashboard)
+```
+
+**Điều phối đội qua git — KHÔNG cần biết git (PO/BA yên tâm):** agent làm git thay bạn, chỉ hỏi có/không:
+
+- **Lúc activate**: agent hỏi *"Pull việc mới nhất của đồng đội từ repo docs?"* → bạn trả lời **có/không**;
+  nếu có, agent tự chạy `git pull` (bạn không gõ lệnh). Rồi đọc `docs/workspace.yml`, **hỏi bạn chọn app repo**.
+- **Sau khi xong**: agent hỏi *"Đẩy kết quả lên repo docs cho đội?"* → **có/không**; nếu có, agent tự
+  `add + commit + push`. Nếu bị từ chối, agent tự `pull --rebase` rồi push lại; conflict thật mới dừng và
+  nhờ người biết git (Dev). Máy đã login GitLab sẵn nên không phải nhập gì.
+
+Còn lại:
+
+- Dev/Tester gọi **codegraph MCP chung** với param `repo=<repo>` và đọc
+  `<repo>/docs/project-context.md` để hiểu tech stack.
+- PO/BA ghi PRD/epic/story vào **repo `docs`** (`docs/prd`, `docs/epics`, `docs/stories`) theo
+  struct + template BMad, ghi rõ *affected repo(s)*. Code thì Dev push riêng ở app repo qua branch/MR.
+- `fci-dev` có menu **BC** bootstrap `<repo>/docs/project-context.md` bằng `bmad-document-project` + codegraph.
+
+> **Giới hạn cần biết:** git không có notification (cần ping Slack/GitLab khi handoff); codegraph index
+> **từng repo riêng**, không nối lời gọi chéo repo (ranh giới API mô tả trong `docs/`); sau khi code đổi
+> nhiều cần `codegraph build <repo>` lại để graph chính xác.
+
+---
+
 ## Workflow
 
 ```
 PO (Thanh)  →  BA (Vanh)  →  Dev (Zitech)  →  Tester (Hanh)  →  PO sign-off
 ```
 
-Handoff files (file-based, mặc định trong `handoff/`):
+Handoff files (file-based, trong repo docs tại `docs/handoff/` — share qua git giữa các thành viên):
 
-- `handoff/po-to-ba-[feature].md`
-- `handoff/ba-to-dev-[feature].md`
-- `handoff/dev-to-tester-[story-id].md`
-- `handoff/tester-to-po-[story-id]-approved.md`
-- `handoff/tester-to-dev-BUG-[id].md`
+- `docs/handoff/po-to-ba-[feature].md`
+- `docs/handoff/ba-to-dev-[feature].md`
+- `docs/handoff/dev-to-tester-[story-id].md`
+- `docs/handoff/tester-to-po-[story-id]-approved.md`
+- `docs/handoff/tester-to-dev-BUG-[id].md`
 
 ---
 

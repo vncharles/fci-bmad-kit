@@ -1,0 +1,64 @@
+# =============================================================================
+# FCI Workspace Manifest — TEMPLATE
+# =============================================================================
+# File này liệt kê TẤT CẢ repo của một dự án. Nó là "nguồn sự thật" chung cho cả đội.
+#
+# CÁCH DÙNG (cho dự án mới / team khác):
+#   1. Tạo (hoặc đã có) repo "docs" trên GitLab cho dự án.
+#   2. Copy file này vào repo docs, ĐỔI TÊN thành: workspace.yml
+#        →  <repo-docs>/workspace.yml
+#   3. Sửa các giá trị bên dưới (name, url, branch của từng repo). Xoá repo mẫu không dùng.
+#   4. Commit & push repo docs.
+#   5. Mỗi thành viên chạy:  ROLE=<po|ba|dev|tester> ./init-workspace.sh
+#      - Chỉ cần dán URL repo docs MỘT LẦN; script đọc file này rồi tự clone các app repo
+#        (không phải nhập lại từng link). Dev/BA/Tester chỉ trả lời y/n cho từng repo.
+#
+# QUY ƯỚC:
+#   - PHẢI có đúng một repo type: docs, tên cố định "docs", codegraph: false.
+#   - Các app repo (code): type: app, codegraph: true, có registry_name (= tên dùng cho
+#     tham số repo=<...> khi gọi codegraph MCP).
+#   - handoff + workspace.yml + prd/epics/stories/tasks/test-plans đều nằm trong repo docs.
+# =============================================================================
+
+workspace:
+  name: TEN-DU-AN                 # vd: LBaaS
+  created: YYYY-MM-DD             # ngày khởi tạo (init-workspace.sh tự điền nếu sinh mới)
+  docs_repo: docs                 # tên thư mục repo docs (giữ "docs")
+  handoff_folder: docs/handoff    # nơi lưu file bàn giao giữa các vai (trong repo docs)
+
+  # Codegraph (@optave/codegraph) — MỘT MCP server phục vụ mọi app repo.
+  # Agent gọi tool codegraph và truyền repo=<registry_name> để chọn codebase.
+  codegraph_mcp: codegraph
+  codegraph_mode: multi-repo
+
+repos:
+  # --- Repo docs: BẮT BUỘC, đầu tiên, không codegraph ------------------------
+  - name: docs
+    url: git@gitlab.company.com:du-an/docs.git      # ĐỔI: URL repo docs
+    branch: main                                     # ĐỔI nếu khác
+    type: docs
+    codegraph: false
+
+  # --- App repo mẫu #1 (xoá/sửa theo dự án) ---------------------------------
+  - name: octavia
+    url: git@gitlab.company.com:du-an/octavia.git    # ĐỔI: URL repo code
+    branch: develop                                  # ĐỔI: branch làm việc
+    type: app
+    codegraph: true
+    registry_name: octavia        # tên dùng cho codegraph repo=<...> (thường = name)
+
+  # --- App repo mẫu #2 -------------------------------------------------------
+  - name: octavia-dashboard
+    url: git@gitlab.company.com:du-an/octavia-dashboard.git
+    branch: main
+    type: app
+    codegraph: true
+    registry_name: octavia-dashboard
+
+  # --- Thêm app repo khác theo mẫu trên --------------------------------------
+  # - name: <ten-repo>
+  #   url: <git-url>
+  #   branch: <branch>
+  #   type: app
+  #   codegraph: true
+  #   registry_name: <ten-repo>

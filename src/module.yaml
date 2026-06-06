@@ -46,7 +46,17 @@ agents:
 # output_folder, project_root) are injected automatically by the installer.
 
 # Where the FCI agents read/write file-based handoffs between roles.
+# TEAM MODEL: handoff sống TRONG repo docs (docs/handoff) để share qua git giữa các thành viên.
 fci_handoff_folder:
   prompt: "Where should FCI role-to-role handoff files be stored?"
-  default: "{project-root}/handoff"
+  default: "{project-root}/docs/handoff"
+  result: "{value}"
+
+# MULTI-REPO: registry file liệt kê các repo trong workspace, NẰM TRONG repo docs để share qua git.
+# Các agent đọc file này để biết có những repo nào, hỏi user chọn repo đang làm việc,
+# rồi gọi codegraph MCP chung với param repo=<registry_name> và đọc docs/project-context của repo đó.
+# Trong single-repo mode file có thể không tồn tại — agent fallback về project root.
+fci_workspace_file:
+  prompt: "Path to the multi-repo workspace registry (leave default for single-repo)."
+  default: "{project-root}/docs/workspace.yml"
   result: "{value}"
