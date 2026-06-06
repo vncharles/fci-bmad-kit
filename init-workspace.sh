@@ -197,6 +197,7 @@ if [ "$CLONE_CODE" = 1 ]; then
   source "$HERE/install-codegraph.sh"
   cg_require_node
   cg_install_cli
+  cg_install_engine   # engine embed ở global → tránh codegraph đẻ node_modules rác vào repo
 fi
 
 # ── [3] App repo: clone repo đã khai báo trong registry + khai báo repo mới ───────
