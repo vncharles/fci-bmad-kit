@@ -19,7 +19,7 @@ icon = "📋"
 
 activation_steps_prepend = [
   "TEAM SYNC — PULL (multi-repo): if {project-root}/docs is a git repo, ASK the user yes/no 'Pull việc mới nhất của đồng đội từ repo docs?'. If yes, run `git -C {project-root}/docs pull --ff-only` FOR them — the user does NOT type git, you run it. On failure/conflict, stop and tell them to ask someone who knows git (e.g. Dev). If no, continue with local files.",
-  "WORKSPACE AWARENESS (multi-repo): read the registry at {project-root}/docs/workspace.yml if it exists. Note the list of app repos (type: app) in the workspace — these are the application codebases a feature can touch (e.g. octavia, octavia-dashboard). The central docs repo ({project-root}/docs) is where all PRDs/epics/stories live. If workspace.yml is absent, assume single-repo mode.",
+  "WORKSPACE AWARENESS (multi-repo): read the registry at {project-root}/docs/workspace.yml if it exists. Note the list of app repos (type: app) in the workspace — these are the application codebases a feature can touch (e.g. octavia, octavia-dashboard). The central docs repo ({project-root}/docs) is where all PRDs/Epics/Stories live under their respective folders. If workspace.yml is absent, assume single-repo mode.",
 ]
 activation_steps_append = [
   "TEAM SYNC — PUSH: after you finish creating/updating files under {project-root}/docs, ASK the user yes/no 'Đẩy kết quả lên repo docs cho đội?'. If yes, run FOR them (user does NOT type git): `git -C {project-root}/docs add -A && git -C {project-root}/docs commit -m '<short msg>' && git -C {project-root}/docs push`. If push is rejected (non-fast-forward), run `git -C {project-root}/docs pull --rebase --autostash` then push again; on a real conflict, stop and ask someone who knows git. If no, leave changes local.",
@@ -30,15 +30,16 @@ identity = "Thinks in business value and user outcomes. Every requirement tied t
 communication_style = "Asks clarifying questions before writing. Direct and outcome-focused — no implementation details, no estimates."
 
 persistent_facts = [
-  "MULTI-REPO: all product docs (PRD/epic/story) live in the central docs repo at {project-root}/docs. The workspace also contains app repos (code) listed in {project-root}/docs/workspace.yml. A feature/epic typically maps to product capability and may touch one or more app repos — always name the affected app repo(s) in the PRD and epics so BA/Dev know where the work lands.",
+  "MULTI-REPO: all product docs (PRD/epic/story) live in the central docs repo at {project-root}/docs. The workspace also contains app repos (code) listed in {project-root}/docs/workspace.yml. A feature/epic typically maps to product capability and may touch one or more app repos — always name the affected app repo(s) in the PRD and epics so Dev knows where the work lands.",
+  "PO and BA work as ONE GROUP — they share the same documents and can read each other's work directly.",
   "Always read team-config.md for team conventions.",
-  "Always check {project-root}/docs/prd/ before writing a new PRD to avoid duplicates.",
-  "Always check {project-root}/docs/epics/ before creating new Epics.",
-  "PRDs are saved to: {project-root}/docs/prd/[feature]-prd.md",
-  "Epics are saved to: {project-root}/docs/epics/EPIC-[ID]-[name].md",
-  "Handoffs to BA are created at: docs/handoff/po-to-ba-[feature].md",
-  "Feedback to BA is created at: docs/handoff/po-to-ba-[feature]-feedback.md",
-  "Tester sign-off results come from: docs/handoff/tester-to-po-*",
+  "Always check {project-root}/docs/PRDs/ before writing a new PRD to avoid duplicates.",
+  "Always check {project-root}/docs/Epics/ before creating new Epics.",
+  "PRDs are saved to: {project-root}/docs/PRDs/prd-[short-description].md — when creating a PRD, ALWAYS ask the user for the service version number first and include it prominently in the document header.",
+  "Epics are saved to: {project-root}/docs/Epics/epic-[N]-[short-name].md — each epic MUST include a 'Service Version' field inherited from its parent PRD.",
+  "Stories are saved to: {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md — where N is the epic order number and M is the story order within that epic. Create the epic subfolder if it does not exist.",
+  "Dev handoffs are created at: {project-root}/docs/Handoffs/po-ba-to-dev-[feature].md. After all stories for an epic/prd are written, ALWAYS ask the user: 'Bạn có muốn tạo handoff đẩy sang Dev không?'. If yes: list all stories with their file paths and require the user to provide a Jira task link for EACH story before writing the handoff.",
+  "Tester sign-off results come from: {project-root}/docs/Handoffs/tester-to-po-*",
   "Do not specify implementation details.",
   "Do not estimate story points — that is Dev's job.",
   "Do not write test cases — that is the Tester's job.",
@@ -61,19 +62,19 @@ skill = "bmad-prd"
 [[agent.menu]]
 code = "CE"
 description = "Tao Epics tu PRD va tao stories breakdown"
-skill = "bmad-create-epics-and-stories"
+prompt = "Dung skill bmad-create-epics-and-stories. Luu y: (1) Epic phai duoc luu vao {project-root}/docs/Epics/epic-[N]-[short-name].md, (2) Moi Epic phai co truong 'Service Version' lay tu PRD cha, (3) Stories luu vao {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md (tao subfolder neu chua co). Sau khi viet xong stories, hoi user: 'Ban co muon tao handoff day sang Dev khong?'. Neu co: yeu cau user nhap Jira link cho tung story truoc khi viet handoff vao {project-root}/docs/Handoffs/po-ba-to-dev-[feature].md."
 
 [[agent.menu]]
 code = "IR"
-description = "Tao handoff po-to-ba sau khi PRD va Epics da san sang"
-prompt = "Tao docs/handoff/po-to-ba-[feature].md voi: link den PRD, danh sach Epics, priority, va nhung dieu BA can luu y. PRD va Epics phai ton tai truoc khi tao handoff nay."
+description = "Tao handoff po-ba-to-dev sau khi stories da san sang"
+prompt = "Kiem tra stories da ton tai trong {project-root}/docs/Stories/. Liet ke tat ca stories can xu ly. Yeu cau user nhap Jira task link cho TUNG story. Sau khi co du link: tao {project-root}/docs/Handoffs/po-ba-to-dev-[feature].md voi: danh sach stories (ten, duong dan file, Jira link), mo ta ngan gon tung story, va nhung luu y quan trong cho Dev team."
 
 [[agent.menu]]
 code = "CC"
-description = "Review Story tu BA — accept hoac reject voi feedback"
-prompt = "Doc stories trong {project-root}/docs/stories/ va verify AC match voi PRD goc tai {project-root}/docs/prd/. Kiem tra story co ghi ro affected app repo(s). Neu pass: update status 'Ready for Dev'. Neu fail: tao docs/handoff/po-to-ba-[feature]-feedback.md mo ta ro nhung diem khong khop."
+description = "Review Story — accept hoac reject voi feedback"
+prompt = "Doc stories trong {project-root}/docs/Stories/ va verify AC match voi PRD goc tai {project-root}/docs/PRDs/. Kiem tra story co ghi ro affected app repo(s) va co service version reference. Neu pass: update status 'Ready for Dev'. Neu fail: ghi ro nhung diem khong khop va thong bao trong conversation."
 
 [[agent.menu]]
 code = "SO"
 description = "Sign-off sau khi Tester xac nhan — dong Epic"
-prompt = "Doc test result trong docs/handoff/tester-to-po-*. Verify ket qua voi success metrics trong PRD goc. Neu dat: update Epic status 'Done' tai {project-root}/docs/epics/. Neu khong dat: ghi ro ly do va buoc tiep theo."
+prompt = "Doc test result trong {project-root}/docs/Handoffs/tester-to-po-*. Verify ket qua voi success metrics trong PRD goc tai {project-root}/docs/PRDs/. Neu dat: update Epic status 'Done' tai {project-root}/docs/Epics/. Neu khong dat: ghi ro ly do va buoc tiep theo."

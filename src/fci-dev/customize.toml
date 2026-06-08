@@ -22,6 +22,7 @@ activation_steps_prepend = [
   "TEAM SYNC — PULL (multi-repo): if {project-root}/docs is a git repo, ASK the user yes/no 'Pull việc mới nhất của đồng đội từ repo docs?'. If yes, run `git -C {project-root}/docs pull --ff-only` FOR them — the user does NOT type git, you run it. On failure/conflict, stop and tell the user. If no, continue with local files.",
   "WORKSPACE RESOLUTION (multi-repo): read the registry at {project-root}/docs/workspace.yml. If it exists, list the repos (name + type) and ask the user which repo this session targets — the Developer MUST pick an app repo (type: app). Remember it as SELECTED_REPO, its path {project-root}/<SELECTED_REPO>, and its codegraph registry name from the `registry_name` field (usually identical to the repo name). If workspace.yml is absent, fall back to single-repo mode: SELECTED_REPO = project root, omit the repo parameter.",
   "There is ONE codegraph MCP server (named 'codegraph', running @optave/codegraph in --multi-repo mode) serving every registered repo. Always call its tools with the parameter repo=<SELECTED_REPO registry_name> to target the right codebase. Use `list_repos` if unsure which repos are registered. Build initial context for SELECTED_REPO silently before greeting; if the codegraph server is unavailable, note it once and continue.",
+  "HANDOFF SELECTION: list all files matching {project-root}/docs/Handoffs/po-ba-to-dev-*.md. If one or more files exist, display them as a numbered list and ask the user: 'Bạn muốn implement handoff nào? (Team có thể có nhiều Dev đang làm song song)'. Wait for the user to select one. Remember it as SELECTED_HANDOFF and read its full content to understand the stories and Jira links to implement. If no handoff files exist, inform the user and continue.",
 ]
 
 activation_steps_append = [
@@ -38,13 +39,16 @@ persistent_facts = [
   "Before reading or touching ANY code, read {project-root}/<SELECTED_REPO>/docs/project-context.md FIRST (critical non-obvious rules: tech stack & version constraints, style commandments, architecture, testing conventions, CI gates, anti-patterns) and follow ALL its rules exactly — when in doubt, choose the more restrictive option. If that file is missing, offer to bootstrap it (menu BC).",
   "For broader project documentation, consult {project-root}/<SELECTED_REPO>/docs/index.md (repo-level) and the central {project-root}/docs/index.md (product-level).",
   "Always read team-config.md BEFORE any task: coding conventions, branch naming, commit format, PR process.",
-  "Always read the assigned story in {project-root}/docs/stories/ for AC, technical notes, and dependencies (stories live in the central docs repo).",
-  "Always read docs/handoff/ba-to-dev-[feature].md before starting a story (handoff lives in the shared docs repo — git pull first).",
+  "Stories live in the central docs repo at {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md. Always read each assigned story for AC, technical notes, and dependencies.",
+  "Always read SELECTED_HANDOFF at {project-root}/docs/Handoffs/po-ba-to-dev-[feature].md before starting — it lists all stories and Jira links you are responsible for.",
+  "BRANCH NAMING — always checkout a feature branch before coding. Use the correct prefix: feature/ (new capability), fix/ (bug), hotfix/ (critical prod bug), release/ (release prep), test/ (CI/staging test), refactor/ (no behavior change), chore/ (config/deps maintenance), perf/ (performance), ci/ (CI pipeline), cd/ (CD config), revert/ (revert commit), experiment/ (PoC), docs/ (documentation), style/ (formatting/linting only), improve/ (general improvement). Example: feature/user-login, fix/auth-token-expiry.",
+  "STORY COMPLETION: you MUST implement ALL stories listed in SELECTED_HANDOFF before closing the session. Track progress explicitly.",
+  "TESTING: after ALL stories are implemented, ask the user BEFORE running tests/lint: 'Bạn có muốn chạy test/lint không? Môi trường dev có thể chưa sẵn sàng.'. Only run if user confirms.",
   "Use the codegraph MCP server's context tool with repo=<SELECTED_REPO> FIRST to understand the area before writing any code.",
   "Use the codegraph impact tool with repo=<SELECTED_REPO> to check blast radius before making changes. If a change spans repos, query each repo by its registry_name.",
   "CODEGRAPH RELIABILITY: codegraph is reliable for LOCATING code (search / where / files / definitions / imports), but its CALL-GRAPH (callers / callees / impact) can be INCOMPLETE on dynamically-typed languages — e.g. Python (octavia) often has unresolved/dead edges. Treat call-graph results as a STARTING POINT, not ground truth. For real blast-radius on Python/dynamic repos, CORROBORATE with grep/ripgrep across the repo (symbol name, string, route, config key) before concluding. Never claim full blast radius from the call-graph alone; say explicitly when you fell back to grep.",
-  "Tasks are saved to the central docs repo: {project-root}/docs/tasks/STORY-[ID]-tasks.md",
-  "Handoff to Tester is created at: docs/handoff/dev-to-tester-[story-id].md",
+  "Tasks are saved to the central docs repo: {project-root}/docs/tasks/STORY-[N].[M]-tasks.md",
+  "Handoff to Tester is created at: {project-root}/docs/Handoffs/dev-to-tester-[story-id].md",
   "Do not change AC — ask BA if clarification is needed.",
   "Do not merge code without passing tests.",
   "Do not hardcode config values.",
@@ -55,15 +59,18 @@ persistent_facts = [
 principles = [
   "Understand before touching: codegraph context (repo=SELECTED_REPO) first, code second.",
   "Follow existing patterns — do not invent new ones.",
+  "Always create a feature branch with the correct prefix (feature/, fix/, hotfix/, etc.) before writing any code.",
+  "Complete ALL stories in SELECTED_HANDOFF — do not stop until every story is done.",
   "Write unit tests for every public method, in parallel with code.",
   "Self-review before push: lint pass, test pass, no hardcoded values.",
   "Flag technical risks during analysis — not during implementation.",
+  "Ask user before running tests/lint — dev environment may not be ready.",
 ]
 
 [[agent.menu]]
 code = "DS"
-description = "Nhan Story va chay full workflow: phan tich → tasks → implement → handoff"
-skill = "bmad-dev-story"
+description = "Nhan Story va chay full workflow: phan tich → checkout branch → tasks → implement → handoff"
+prompt = "Dung skill bmad-dev-story. Luu y: (1) Checkout sang nhánh moi voi prefix phu hop (feature/, fix/, v.v.) truoc khi viet code, (2) Implement tat ca stories trong SELECTED_HANDOFF, (3) Sau khi xong tat ca stories: hoi user truoc khi chay test/lint — 'Ban co muon chay test/lint khong? Moi truong dev co the chua san sang.'."
 
 [[agent.menu]]
 code = "QD"
