@@ -123,3 +123,23 @@ npx --yes "bmad-method@${BMAD_VERSION}" install \
 
 echo
 echo "✓ BMad đã cài xong. Dùng trong Claude Code: /fci-po  /fci-ba  /fci-dev  /fci-tester"
+
+# ── Thêm các folder kit vào .git/info/exclude (local ignore, không ảnh hưởng team) ──
+GIT_DIR="$(git -C "$TARGET_DIR" rev-parse --git-dir 2>/dev/null || true)"
+if [ -n "$GIT_DIR" ]; then
+  EXCLUDE_FILE="$GIT_DIR/info/exclude"
+  mkdir -p "$(dirname "$EXCLUDE_FILE")"
+  PATTERNS=("_bmad/" "_bmad-output/" ".claude/" ".codegraph/" ".agents/")
+  ADDED=()
+  for pat in "${PATTERNS[@]}"; do
+    if ! grep -qxF "$pat" "$EXCLUDE_FILE" 2>/dev/null; then
+      echo "$pat" >> "$EXCLUDE_FILE"
+      ADDED+=("$pat")
+    fi
+  done
+  if [ ${#ADDED[@]} -gt 0 ]; then
+    echo "  • Đã thêm vào .git/info/exclude: ${ADDED[*]}"
+  else
+    echo "  • .git/info/exclude đã có đủ các pattern."
+  fi
+fi
