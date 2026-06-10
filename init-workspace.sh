@@ -121,6 +121,30 @@ reg_add_app_repo() {  # reg_add_app_repo <name> <url> <branch>
 }
 
 # ── Git helpers ──────────────────────────────────────────────────────────────────
+
+# Thêm các folder kit vào .git/info/exclude của từng repo (local ignore).
+update_git_exclude() {  # update_git_exclude <repo-path>
+  local repo="$1"
+  local git_dir
+  git_dir="$(git -C "$repo" rev-parse --git-dir 2>/dev/null || true)"
+  [ -z "$git_dir" ] && return 0
+  # git rev-parse --git-dir trả path tương đối (vd ".git") hoặc tuyệt đối (worktree).
+  [[ "$git_dir" = /* ]] || git_dir="$repo/$git_dir"
+  local exclude_file="$git_dir/info/exclude"
+  mkdir -p "$(dirname "$exclude_file")"
+  local -a patterns=("_bmad/" "_bmad-output/" ".claude/" ".codegraph/" ".agents/")
+  local -a added=()
+  for pat in "${patterns[@]}"; do
+    if ! grep -qxF "$pat" "$exclude_file" 2>/dev/null; then
+      echo "$pat" >> "$exclude_file"
+      added+=("$pat")
+    fi
+  done
+  if [ ${#added[@]} -gt 0 ]; then
+    echo "  • .git/info/exclude ($(basename "$repo")): thêm ${added[*]}"
+  fi
+}
+
 # Gọi như STATEMENT thường (KHÔNG trong $()), để lỗi clone không bị set -e nuốt.
 # Trả non-zero nếu clone thất bại → caller skip mềm repo đó.
 git_clone_or_pull() {  # git_clone_or_pull <url> <branch> <dest-name>
@@ -184,6 +208,7 @@ else
     || { echo "✗ Clone docs thất bại. Dừng." >&2; exit 1; }
 fi
 docs_branch="$(current_branch "$DOCS_DIR_NAME")"
+update_git_exclude "$DOCS_PATH"
 reg_init_if_missing
 reg_set_docs_origin "$docs_url" "$docs_branch"
 mkdir -p "$DOCS_PATH/handoff"
@@ -212,6 +237,7 @@ if [ "$CLONE_CODE" = 1 ]; then
     if [ -d "$WORKSPACE_ROOT/$name/.git" ]; then continue; fi
     if ask_yn "Registry có repo '$name' — clone về máy?" "y"; then
       if git_clone_or_pull "$url" "$branch" "$name"; then
+        update_git_exclude "$WORKSPACE_ROOT/$name"
         setup_codegraph_for_repo "$WORKSPACE_ROOT/$name" "$name"
         APP_BUILT=$((APP_BUILT+1))
         echo "  ✓ '$name' (branch: $(current_branch "$name"))"
@@ -235,6 +261,7 @@ while ask_yn "Khai báo thêm một app repo mới vào dự án?" "$([ "$APP_BU
     echo "  ✓ Đã ghi '$name' vào registry."
     if [ "$CLONE_CODE" = 1 ]; then
       if git_clone_or_pull "$url" "$branch" "$name"; then
+        update_git_exclude "$WORKSPACE_ROOT/$name"
         setup_codegraph_for_repo "$WORKSPACE_ROOT/$name" "$name"
         APP_BUILT=$((APP_BUILT+1))
         echo "  ✓ '$name' clone + build xong (branch: $(current_branch "$name"))"
