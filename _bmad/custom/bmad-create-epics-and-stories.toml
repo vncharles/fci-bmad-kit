@@ -1,0 +1,46 @@
+# FCI team override for bmad-create-epics-and-stories.
+# Committed — applies to every developer on the project.
+#
+# The base skill saves everything to {planning_artifacts}/epics.md (one monolithic file).
+# FCI convention requires individual files:
+#   Epics  → {project-root}/docs/Epics/epic-[N]-[short-name].md
+#   Stories → {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md
+#
+# The on_complete hook runs after Step 4 and splits the output accordingly.
+
+[workflow]
+
+persistent_facts = [
+  "FCI FILE CONVENTION: when saving epics and stories, do NOT keep everything in epics.md. Each Epic and each Story must be saved as individual files following: Epics → {project-root}/docs/Epics/epic-[N]-[short-name].md, Stories → {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md. The short-name is a lowercase kebab-case slug derived from the epic/story title.",
+  "SERVICE VERSION: every Epic file must include a 'Service Version' field inherited from its parent PRD.",
+  "AFFECTED REPOS: every Epic and Story file must list the affected app repo(s) (e.g. octavia, octavia-dashboard) so Dev knows where the work lands.",
+]
+
+on_complete = """
+FCI POST-PROCESSING — split the monolithic epics.md into individual FCI files:
+
+1. Read {planning_artifacts}/epics.md in full.
+
+2. For each Epic found (headings like '### Epic N: Title' or '## Epic N: Title'):
+   a. Derive short-name: lowercase-kebab from the title (e.g. 'User Authentication' → 'user-authentication').
+   b. Create {project-root}/docs/Epics/epic-[N]-[short-name].md with this content:
+      - YAML front-matter: title, epic_number (N), service_version (ask user if not in document), affected_repos (from document or ask), status: Draft
+      - Epic goal/description
+      - List of stories in this epic (story number + title only — no full story content)
+
+3. For each Story found (headings like '### Story N.M: Title' or '#### Story N.M: Title'):
+   a. Identify parent Epic N and derive its short-name.
+   b. Create the subfolder {project-root}/docs/Stories/Epic-[N]-[short-name]/ if it does not exist.
+   c. Save the full story content to {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md with:
+      - YAML front-matter: title, story_id (N.M), epic (epic-[N]-[short-name]), status: Draft, jira_link: TBD, affected_repos (inherited from parent epic)
+      - Full user story (As a / I want / So that)
+      - Full acceptance criteria
+
+4. Before writing any files, display the complete list of files that will be created and ask:
+   'Tôi sẽ tạo [X] epic files và [Y] story files trong docs/. Xác nhận không?'
+   Wait for confirmation (Y/yes/có). If declined, leave the planning_artifacts/epics.md as-is and stop.
+
+5. After writing all files, report: how many Epics and Stories were saved, and their file paths.
+
+6. The source file {planning_artifacts}/epics.md is kept as a working reference — do NOT delete it.
+"""

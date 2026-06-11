@@ -70,7 +70,7 @@ prompt = "Dung skill bmad-create-story. Luu y: Stories phai luu vao {project-roo
 [[agent.menu]]
 code = "DR"
 description = "Refine Epics va tao stories breakdown"
-prompt = "Dung skill bmad-create-epics-and-stories. Luu y: Epics luu vao {project-root}/docs/Epics/epic-[N]-[short-name].md, Stories luu vao {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md. Sau khi xong: (1) Hoi user ve handoff sang Dev — neu co: lay Jira link tung story, tao po-ba-to-dev handoff. (2) Hoi user ve handoff sang Tester — neu co: tao ba-to-tester handoff voi AC summary."
+prompt = "Dung skill bmad-create-epics-and-stories. QUAN TRONG — skill nay co FCI post-processing: khi ket thuc workflow (Step 4 Complete), no se tu dong tach file epics.md thanh tung file rieng theo FCI convention: Epics → {project-root}/docs/Epics/epic-[N]-[short-name].md, Stories → {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md. Dung can luu tay vao epics.md — chi confirm khi no hoi xac nhan truoc khi ghi file. Sau khi xong: (1) Hoi user ve handoff sang Dev — neu co: lay Jira link tung story, tao po-ba-to-dev handoff. (2) Hoi user ve handoff sang Tester — neu co: tao ba-to-tester handoff voi AC summary."
 
 [[agent.menu]]
 code = "CB"

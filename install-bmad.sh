@@ -124,6 +124,30 @@ npx --yes "bmad-method@${BMAD_VERSION}" install \
 echo
 echo "✓ BMad đã cài xong. Dùng trong Claude Code: /fci-po  /fci-ba  /fci-dev  /fci-tester"
 
+# ── Cài FCI custom overrides cho các built-in BMad skills ─────────────────────
+# Các file này override hành vi của skills gốc (vd: bmad-create-epics-and-stories
+# để tách epics.md thành từng file riêng theo FCI convention).
+# Chỉ ghi nếu file chưa tồn tại — không overwrite customization của team.
+FCI_CUSTOM_OVERRIDES=("bmad-create-epics-and-stories.toml")
+CUSTOM_DEST_DIR="$TARGET_DIR/_bmad/custom"
+mkdir -p "$CUSTOM_DEST_DIR"
+
+for override in "${FCI_CUSTOM_OVERRIDES[@]}"; do
+  dest="$CUSTOM_DEST_DIR/$override"
+  if [ -f "$dest" ]; then
+    echo "  • _bmad/custom/$override đã tồn tại — giữ nguyên."
+    continue
+  fi
+  if [ -n "$HERE" ] && [ -f "$HERE/_bmad/custom/$override" ]; then
+    cp "$HERE/_bmad/custom/$override" "$dest"
+    echo "  • Đã cài _bmad/custom/$override (FCI convention)."
+  elif curl -fsSL "$RAW_BASE/_bmad/custom/$override" -o "$dest" 2>/dev/null; then
+    echo "  • Đã tải _bmad/custom/$override (FCI convention)."
+  else
+    echo "  ⚠ Không tải được _bmad/custom/$override — bỏ qua."
+  fi
+done
+
 # ── Thêm các folder kit vào .git/info/exclude (local ignore, không ảnh hưởng team) ──
 GIT_DIR="$(git -C "$TARGET_DIR" rev-parse --git-dir 2>/dev/null || true)"
 if [ -n "$GIT_DIR" ]; then

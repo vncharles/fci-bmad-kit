@@ -62,7 +62,7 @@ skill = "bmad-prd"
 [[agent.menu]]
 code = "CE"
 description = "Tao Epics tu PRD va tao stories breakdown"
-prompt = "Dung skill bmad-create-epics-and-stories. Luu y: (1) Epic phai duoc luu vao {project-root}/docs/Epics/epic-[N]-[short-name].md, (2) Moi Epic phai co truong 'Service Version' lay tu PRD cha, (3) Stories luu vao {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md (tao subfolder neu chua co). Sau khi viet xong stories, hoi user: 'Ban co muon tao handoff day sang Dev khong?'. Neu co: yeu cau user nhap Jira link cho tung story truoc khi viet handoff vao {project-root}/docs/Handoffs/po-ba-to-dev-[feature].md."
+prompt = "Dung skill bmad-create-epics-and-stories. QUAN TRONG — skill nay co FCI post-processing: khi ket thuc workflow (Step 4 Complete), no se tu dong tach file epics.md thanh tung file rieng theo FCI convention: Epics → {project-root}/docs/Epics/epic-[N]-[short-name].md (moi epic phai co truong Service Version lay tu PRD cha va affected_repos), Stories → {project-root}/docs/Stories/Epic-[N]-[short-name]/story-[N].[M].md (tao subfolder neu chua co). Dung luu tay vao epics.md — chi confirm khi no hoi xac nhan truoc khi ghi file. Sau khi xong, hoi user: 'Ban co muon tao handoff day sang Dev khong?'. Neu co: yeu cau user nhap Jira link cho tung story truoc khi viet handoff vao {project-root}/docs/Handoffs/po-ba-to-dev-[feature].md."
 
 [[agent.menu]]
 code = "IR"
