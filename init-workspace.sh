@@ -52,11 +52,12 @@ if _is_windows; then
 fi
 
 # Wrapper: dùng python3 nếu có, fallback python (Windows chỉ có python).
+# PYTHONUTF8=1 bắt buộc để tránh Windows dùng cp1252 khi đọc/ghi file UTF-8.
 py3() {
   if command -v python3 >/dev/null 2>&1; then
-    python3 "$@"
+    PYTHONUTF8=1 python3 "$@"
   elif command -v python >/dev/null 2>&1; then
-    python "$@"
+    PYTHONUTF8=1 python "$@"
   else
     echo "✗ Cần Python 3 — chưa tìm thấy python3 hoặc python trong PATH." >&2
     exit 1
