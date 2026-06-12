@@ -35,6 +35,25 @@ is_windows() {
   return 1
 }
 
+# Tắt Python App Execution Alias (Store stub) trên Windows nếu đang block python thật.
+win_fix_python_alias() {
+  is_windows || return 0
+  # Chỉ xử lý khi python hiện tại là Store stub
+  python --version 2>&1 | grep -qi "microsoft store\|run without arguments" || return 0
+  echo "  • Phát hiện Python App Execution Alias (Store stub) — đang tắt tự động..."
+  powershell.exe -NoProfile -Command "
+    \$paths = @(
+      \"\$env:LOCALAPPDATA\\Microsoft\\WindowsApps\\python.exe\",
+      \"\$env:LOCALAPPDATA\\Microsoft\\WindowsApps\\python3.exe\"
+    )
+    foreach (\$p in \$paths) {
+      if (Test-Path \$p) { Remove-Item \$p -Force -ErrorAction SilentlyContinue }
+    }
+  " 2>/dev/null \
+    && echo "  ✓ Python App Execution Alias đã tắt." \
+    || echo "  ⚠ Không tắt được tự động — vào Settings > Apps > Advanced app settings > App execution aliases, tắt python.exe và python3.exe." >&2
+}
+
 bootstrap_node_via_fnm() {
   if ! command -v fnm >/dev/null 2>&1; then
     echo "✗ Chưa có fnm trên Windows." >&2
@@ -72,6 +91,7 @@ bootstrap_node() {
 }
 
 require_node() {
+  win_fix_python_alias
   if node_ok; then
     echo "  ✓ Node $(node -p 'process.versions.node') OK (>=20.12)"
     return 0

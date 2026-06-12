@@ -49,6 +49,23 @@ cg_is_windows() {
   return 1
 }
 
+cg_win_fix_python_alias() {
+  cg_is_windows || return 0
+  python --version 2>&1 | grep -qi "microsoft store\|run without arguments" || return 0
+  echo "  • Phát hiện Python App Execution Alias (Store stub) — đang tắt tự động..."
+  powershell.exe -NoProfile -Command "
+    \$paths = @(
+      \"\$env:LOCALAPPDATA\\Microsoft\\WindowsApps\\python.exe\",
+      \"\$env:LOCALAPPDATA\\Microsoft\\WindowsApps\\python3.exe\"
+    )
+    foreach (\$p in \$paths) {
+      if (Test-Path \$p) { Remove-Item \$p -Force -ErrorAction SilentlyContinue }
+    }
+  " 2>/dev/null \
+    && echo "  ✓ Python App Execution Alias đã tắt." \
+    || echo "  ⚠ Không tắt được tự động — vào Settings > Apps > Advanced app settings > App execution aliases, tắt python.exe và python3.exe." >&2
+}
+
 cg_bootstrap_node_via_fnm() {
   if ! command -v fnm >/dev/null 2>&1; then
     echo "✗ Chưa có fnm trên Windows." >&2
@@ -85,6 +102,7 @@ cg_bootstrap_node() {
 }
 
 cg_require_node() {
+  cg_win_fix_python_alias
   if cg_node_ok; then return 0; fi
   if command -v node >/dev/null 2>&1; then
     echo "✗ Node $(node -p 'process.versions.node') không khớp — cần Node >=22 (prebuilt sqlite của codegraph)." >&2
