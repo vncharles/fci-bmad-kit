@@ -118,7 +118,7 @@ EOF
 reg_list_app_repos() {
   py3 - "$REG" <<'PY'
 import sys, yaml
-d = yaml.safe_load(open(sys.argv[1])) or {}
+d = yaml.safe_load(open(sys.argv[1], encoding='utf-8')) or {}
 for r in (d.get("repos") or []):
     if r.get("type") == "app":
         print(f"{r.get('name','')}\t{r.get('url','')}\t{r.get('branch','')}\t{r.get('codegraph','')}")
@@ -128,7 +128,7 @@ PY
 reg_has_repo() {  # reg_has_repo <name> -> 0 nếu có
   py3 - "$REG" "$1" <<'PY'
 import sys, yaml
-d = yaml.safe_load(open(sys.argv[1])) or {}
+d = yaml.safe_load(open(sys.argv[1], encoding='utf-8')) or {}
 sys.exit(0 if any((r.get("name")==sys.argv[2]) for r in (d.get("repos") or [])) else 1)
 PY
 }
@@ -138,10 +138,10 @@ reg_set_docs_origin() {  # điền url/branch thực tế cho entry docs (text-r
   py3 - "$REG" "$url" "$branch" <<'PY'
 import sys
 p, url, branch = sys.argv[1], sys.argv[2], sys.argv[3]
-s = open(p).read()
+s = open(p, encoding='utf-8').read()
 s = s.replace("url: __SET_BY_CLONE__", "url: " + url, 1)
 s = s.replace("branch: __SET_BY_CLONE__", "branch: " + branch, 1)
-open(p, "w").write(s)
+open(p, "w", encoding='utf-8').write(s)
 PY
 }
 
