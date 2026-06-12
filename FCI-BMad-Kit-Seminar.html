@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FCI BMad Kit — Seminar</title>
+<style>
+/* ── RESET & BASE ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:      #1B2A6B;
+  --navy-med:  #2E4099;
+  --navy-light:#3D52A0;
+  --blue:      #4A7FD4;
+  --blue-light:#EFF6FF;
+  --teal:      #00B49C;
+  --teal-d:    #007A6A;
+  --teal-light:#E0FDF4;
+  --white:     #FFFFFF;
+  --off-white: #F8FAFF;
+  --gray-100:  #F3F4F6;
+  --gray-200:  #E5E7EB;
+  --gray-500:  #6B7280;
+  --gray-700:  #374151;
+  --red-light: #FEF2F2;
+  --red:       #991B1B;
+  --red-border:#FCA5A5;
+  --sidebar-w: 220px;
+}
+html, body { height: 100%; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; background: var(--off-white); color: var(--gray-700); font-size: 15px; line-height: 1.6; }
+
+/* ── LAYOUT ───────────────────────────────────────────────── */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── SIDEBAR ──────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w);
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  overflow-y: auto; flex-shrink: 0;
+}
+.sidebar-brand {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.sidebar-brand .kit-name {
+  font-size: 1.15em; font-weight: 800; color: #fff;
+  letter-spacing: -0.3px; line-height: 1.2;
+}
+.sidebar-brand .kit-ver {
+  font-size: 0.7em; color: var(--teal); margin-top: 3px;
+  font-weight: 600; letter-spacing: 1px;
+}
+.sidebar-nav { flex: 1; padding: 10px 0; }
+.nav-section-label {
+  font-size: 0.6em; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(255,255,255,.35);
+  padding: 12px 16px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; cursor: pointer;
+  color: rgba(255,255,255,.65); font-size: 0.85em;
+  transition: all .15s; border-left: 3px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+.nav-item.active {
+  background: rgba(0,180,156,.12);
+  border-left-color: var(--teal);
+  color: #fff; font-weight: 600;
+}
+.nav-item .nav-icon { font-size: 1em; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-item .nav-badge {
+  margin-left: auto; font-size: 0.65em; font-weight: 700;
+  background: var(--teal); color: #fff;
+  padding: 1px 6px; border-radius: 20px;
+}
+.sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  font-size: 0.68em; color: rgba(255,255,255,.3);
+  line-height: 1.5;
+}
+
+/* ── MAIN CONTENT ─────────────────────────────────────────── */
+#main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.page { display: none; flex-direction: column; flex: 1; }
+.page.active { display: flex; }
+
+/* ── PAGE HEADER ──────────────────────────────────────────── */
+.page-header {
+  background: #fff; border-bottom: 1px solid var(--gray-200);
+  padding: 20px 36px 16px; flex-shrink: 0;
+}
+.page-header h1 { font-size: 1.4em; font-weight: 800; color: var(--navy); line-height: 1.2; }
+.page-header .subtitle { font-size: 0.82em; color: var(--gray-500); margin-top: 3px; }
+.page-body { padding: 28px 36px; flex: 1; }
+
+/* ── COVER PAGE ───────────────────────────────────────────── */
+#page-cover { background: linear-gradient(135deg, var(--navy) 0%, #0D1B4A 100%); }
+#page-cover .cover-inner {
+  display: flex; flex-direction: column;
+  justify-content: center; min-height: 100%;
+  padding: 48px; max-width: 860px;
+}
+.cover-eyebrow {
+  font-size: 0.7em; font-weight: 700; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--teal); margin-bottom: 14px;
+}
+.cover-title {
+  font-size: 3.2em; font-weight: 900; color: #fff;
+  line-height: 1.05; margin-bottom: 10px;
+  letter-spacing: -1px;
+}
+.cover-accent { color: var(--teal); }
+.cover-rule { width: 80px; height: 4px; background: var(--teal); border-radius: 2px; margin: 16px 0 20px; }
+.cover-desc { font-size: 1.05em; color: rgba(255,255,255,.75); line-height: 1.6; margin-bottom: 28px; }
+.cover-agents { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+.cover-agent-tag {
+  padding: 7px 14px; border-radius: 6px;
+  border: 1px solid rgba(0,180,156,.4);
+  color: rgba(255,255,255,.85); font-size: 0.82em;
+  background: rgba(0,180,156,.08);
+}
+.cover-meta { font-size: 0.75em; color: rgba(255,255,255,.3); }
+
+/* ── CARDS ────────────────────────────────────────────────── */
+.card {
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: 10px; padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.card-teal  { background: var(--teal-light); border-color: #6EE7B7; }
+.card-blue  { background: var(--blue-light); border-color: #BFDBFE; }
+.card-red   { background: var(--red-light); border-color: var(--red-border); }
+.card-navy  { background: #F0F4FF; border-color: #C7D2FE; }
+.card-dark  { background: #0A1628; border: 1px solid var(--navy-light); }
+.card-code  { background: #0D1B3A; border: 1px solid var(--blue); }
+.card-warn  { background: #FFFBEB; border-color: #FCD34D; }
+
+/* ── GRID ─────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+/* ── SECTION TITLE ────────────────────────────────────────── */
+.section-title {
+  font-size: 0.75em; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--teal);
+  margin-bottom: 14px;
+}
+
+/* ── TAG / BADGE ──────────────────────────────────────────── */
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 4px;
+  font-size: 0.72em; font-weight: 700; margin: 2px;
+}
+.tag-teal  { background: var(--teal);    color: #fff; }
+.tag-blue  { background: var(--blue);    color: #fff; }
+.tag-navy  { background: var(--navy);    color: #fff; }
+.tag-ghost { background: transparent; border: 1.5px solid var(--teal); color: var(--teal-d); }
+.tag-red   { background: #FEE2E2; color: var(--red); border: 1px solid var(--red-border); }
+
+/* ── NUM CIRCLE ───────────────────────────────────────────── */
+.num-circle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%;
+  font-weight: 700; font-size: 0.8em; flex-shrink: 0;
+}
+
+/* ── HIGHLIGHT / WARN BOX ─────────────────────────────────── */
+.highlight-box {
+  background: var(--teal-light); border: 1px solid #6EE7B7;
+  border-radius: 8px; padding: 12px 16px;
+  color: var(--teal-d); font-size: 0.85em; font-weight: 600;
+}
+.warn-box {
+  background: #FFFBEB; border: 1px solid #FCD34D;
+  border-radius: 8px; padding: 12px 16px;
+  color: #92400E; font-size: 0.82em; line-height: 1.6;
+}
+.info-box {
+  background: var(--blue-light); border: 1px solid #BFDBFE;
+  border-radius: 8px; padding: 12px 16px;
+  color: #1E40AF; font-size: 0.82em; line-height: 1.6;
+}
+
+/* ── CODE BLOCK ───────────────────────────────────────────── */
+.code-block {
+  background: #0D1B3A; border: 1px solid rgba(74,127,212,.4);
+  border-radius: 8px; padding: 14px 18px;
+  font-family: 'Consolas', 'JetBrains Mono', monospace;
+  font-size: 0.82em; color: #9BBFE0; line-height: 1.7;
+  white-space: pre; overflow-x: auto;
+}
+.code-teal {
+  background: #071A14; border-color: rgba(0,180,156,.4); color: #7EDDD0;
+}
+
+/* ── AGENT CARDS ──────────────────────────────────────────── */
+.agent-card {
+  background: var(--navy-med);
+  border: 1px solid rgba(0,180,156,.3);
+  border-radius: 10px; padding: 20px 16px;
+  text-align: center; transition: transform .2s, box-shadow .2s;
+}
+.agent-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.agent-card .cmd  { color: var(--teal); font-family: monospace; font-size: 0.85em; font-weight: 700; }
+.agent-card .a-name { color: #fff; font-size: 1.25em; font-weight: 800; margin: 8px 0 2px; }
+.agent-card .role { color: rgba(255,255,255,.6); font-size: 0.75em; }
+.agent-card hr    { border: none; border-top: 1px solid rgba(0,180,156,.3); margin: 12px 0; }
+.agent-card .desc { color: rgba(255,255,255,.7); font-size: 0.72em; line-height: 1.5; }
+
+/* ── FLOW ROW ─────────────────────────────────────────────── */
+.flow-row { display: flex; align-items: center; gap: 8px; }
+.flow-node {
+  flex: 1; border-radius: 50px; padding: 10px 8px;
+  text-align: center; font-weight: 700; font-size: 0.78em;
+  color: #fff; line-height: 1.3;
+}
+.flow-arrow { color: var(--teal); font-size: 1.3em; flex-shrink: 0; }
+
+/* ── PERSONA ROW ──────────────────────────────────────────── */
+.persona-row {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 16px; background: #fff;
+  border: 1px solid var(--gray-200); border-radius: 8px;
+  border-left: 4px solid var(--gray-200);
+  transition: box-shadow .15s;
+}
+.persona-row:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+
+/* ── MENU ITEM ────────────────────────────────────────────── */
+.menu-item {
+  display: flex; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--gray-200); margin-bottom: 8px;
+}
+.menu-code {
+  padding: 9px 14px; font-family: monospace;
+  font-weight: 700; font-size: 0.85em; color: #fff;
+  display: flex; align-items: center;
+  min-width: 54px; justify-content: center;
+}
+.menu-desc {
+  padding: 8px 14px; font-size: 0.8em; color: var(--gray-700);
+  background: #fff; display: flex; align-items: center;
+  line-height: 1.4;
+}
+
+/* ── TABLE ────────────────────────────────────────────────── */
+.fci-table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+.fci-table th { background: var(--navy); color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; }
+.fci-table td { padding: 8px 12px; border-bottom: 1px solid var(--gray-200); }
+.fci-table tr:last-child td { border-bottom: none; }
+.fci-table tr:hover td { background: var(--gray-100); }
+
+/* ── CHEAT ROW ────────────────────────────────────────────── */
+.cheat-row {
+  display: flex; align-items: stretch; border-radius: 8px;
+  overflow: hidden; margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.cheat-role {
+  padding: 12px 18px; color: #fff; font-weight: 700;
+  font-size: 0.85em; min-width: 140px; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 2px;
+}
+.cheat-role small { font-weight: 400; opacity: .75; font-family: monospace; font-size: 0.82em; }
+.cheat-flow {
+  padding: 12px 18px; font-family: monospace; font-size: 0.85em;
+  font-weight: 600; background: #fff; flex: 1;
+  display: flex; align-items: center;
+  border: 1px solid var(--gray-200); border-left: none;
+}
+
+/* ── STEP LIST ────────────────────────────────────────────── */
+.step-list { display: flex; flex-direction: column; gap: 10px; }
+.step-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px; background: #fff;
+  border: 1px solid var(--gray-200); border-radius: 8px;
+}
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.78em; color: #fff;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+/* ── CUSTOM POINT CARD ────────────────────────────────────── */
+.custom-card {
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: 10px; overflow: hidden;
+  margin-bottom: 20px;
+}
+.custom-card-header {
+  padding: 12px 20px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--gray-200);
+}
+.custom-card-num {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.95em; color: #fff; flex-shrink: 0;
+}
+.custom-card-title { font-weight: 700; font-size: 1em; color: var(--navy); }
+.custom-card-sub   { font-size: 0.75em; color: var(--gray-500); margin-top: 1px; }
+.custom-card-body  { padding: 18px 20px; }
+
+/* ── UTILS ────────────────────────────────────────────────── */
+.mt-0{margin-top:0} .mb-0{margin-bottom:0}
+.mt-4{margin-top:4px} .mb-4{margin-bottom:4px}
+.mt-8{margin-top:8px} .mb-8{margin-bottom:8px}
+.mt-12{margin-top:12px} .mb-12{margin-bottom:12px}
+.mt-16{margin-top:16px} .mb-16{margin-bottom:16px}
+.mt-20{margin-top:20px} .mb-20{margin-bottom:20px}
+.gap-8{gap:8px} .gap-12{gap:12px} .gap-16{gap:16px}
+.flex{display:flex} .flex-col{flex-direction:column}
+.items-start{align-items:flex-start} .items-center{align-items:center}
+.bold{font-weight:700} .semibold{font-weight:600}
+.small{font-size:0.82em} .xsmall{font-size:0.72em}
+.mono{font-family:monospace}
+.text-navy{color:var(--navy)} .text-teal{color:var(--teal)}
+.text-blue{color:var(--blue)} .text-gray{color:var(--gray-500)}
+.text-red{color:var(--red)} .text-white{color:#fff}
+.text-muted{color:rgba(255,255,255,.55)}
+p.body { font-size: 0.9em; line-height: 1.65; color: var(--gray-700); }
+code { font-family: monospace; background: var(--gray-100); border-radius: 3px; padding: 1px 5px; font-size: 0.88em; color: var(--navy-med); }
+strong { font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── SIDEBAR ──────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="kit-name">FCI BMad Kit</div>
+    <div class="kit-ver">v2.0.0 · Seminar</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Giới thiệu</div>
+    <div class="nav-item active" data-page="cover">
+      <span class="nav-icon">🏠</span> Tổng quan
+    </div>
+    <div class="nav-item" data-page="problem">
+      <span class="nav-icon">🎯</span> Vấn đề & Mục tiêu
+    </div>
+    <div class="nav-item" data-page="agents">
+      <span class="nav-icon">🤖</span> 4 Agent FCI
+    </div>
+
+    <div class="nav-section-label">Nền tảng</div>
+    <div class="nav-item" data-page="bmad">
+      <span class="nav-icon">⚡</span> Kế thừa từ BMad
+    </div>
+
+    <div class="nav-section-label">FCI Custom</div>
+    <div class="nav-item" data-page="persona">
+      <span class="nav-icon">👤</span> ① Persona có tên
+    </div>
+    <div class="nav-item" data-page="multirepo">
+      <span class="nav-icon">🗂️</span> ② Multi-repo + Git
+    </div>
+    <div class="nav-item" data-page="handoff">
+      <span class="nav-icon">📂</span> ③ Handoff & Artifacts
+    </div>
+    <div class="nav-item" data-page="codegraph">
+      <span class="nav-icon">🔍</span> ④ Codegraph MCP
+    </div>
+    <div class="nav-item" data-page="menus">
+      <span class="nav-icon">📋</span> ⑤ Menu FCI-specific
+    </div>
+
+    <div class="nav-section-label">Thực hành</div>
+    <div class="nav-item" data-page="workflow">
+      <span class="nav-icon">🔁</span> Workflow team
+    </div>
+    <div class="nav-item" data-page="install">
+      <span class="nav-icon">🚀</span> Cài đặt
+    </div>
+    <div class="nav-item" data-page="cheatsheet">
+      <span class="nav-icon">📌</span> Cheat-sheet
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    FCI Engineering Team<br>
+    June 2026
+  </div>
+</nav>
+
+<!-- ── MAIN ──────────────────────────────────────────────── -->
+<main id="main">
+
+<!-- PAGE: COVER ──────────────────────────────────────────── -->
+<div class="page active" id="page-cover">
+  <div class="cover-inner">
+    <div class="cover-eyebrow">Seminar · FCI Engineering Team · June 2026</div>
+    <h1 class="cover-title">FCI <span class="cover-accent">BMad</span> Kit</h1>
+    <div class="cover-rule"></div>
+    <p class="cover-desc">
+      AI Agent Framework cho toàn bộ quy trình phát triển phần mềm —<br>
+      từ Product Owner đến QA Tester, cùng chia sẻ dữ liệu qua Git.
+    </p>
+    <div class="cover-agents">
+      <div class="cover-agent-tag">📋 Thanh — Product Owner</div>
+      <div class="cover-agent-tag">📊 Vanh — Business Analyst</div>
+      <div class="cover-agent-tag">⚙️ Zitech — Developer</div>
+      <div class="cover-agent-tag">🧪 Hanh — QA Tester</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:560px">
+      <div style="padding:14px 16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:8px">
+        <div style="font-size:0.7em; color:var(--teal); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px">Kế thừa từ</div>
+        <div style="color:#fff; font-weight:700; font-size:0.92em">BMad Method</div>
+        <div style="color:rgba(255,255,255,.5); font-size:0.75em; margin-top:2px">10 skill dùng ngay, không viết lại</div>
+      </div>
+      <div style="padding:14px 16px; background:rgba(0,180,156,.08); border:1px solid rgba(0,180,156,.3); border-radius:8px">
+        <div style="font-size:0.7em; color:var(--teal); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px">FCI Tự xây</div>
+        <div style="color:#fff; font-weight:700; font-size:0.92em">5 điểm tinh hoa</div>
+        <div style="color:rgba(255,255,255,.5); font-size:0.75em; margin-top:2px">Persona · Git · Handoff · Codegraph · Menu</div>
+      </div>
+    </div>
+
+    <div class="cover-meta" style="margin-top:28px">fci-bmad-kit v2.0.0 &nbsp;·&nbsp; Built on BMad external module</div>
+  </div>
+</div>
+
+<!-- PAGE: PROBLEM ─────────────────────────────────────────── -->
+<div class="page" id="page-problem">
+  <div class="page-header">
+    <h1>🎯 Vấn đề chúng ta muốn giải quyết</h1>
+    <p class="subtitle">Context & motivation — tại sao chúng ta cần FCI BMad Kit</p>
+  </div>
+  <div class="page-body">
+    <div class="grid-2" style="gap:14px; margin-bottom:20px">
+      <div class="card card-red">
+        <p class="bold text-red mb-8" style="font-size:0.95em">📁 Tài liệu rải rác</p>
+        <p class="body">PRD/Story lưu mỗi nơi một chỗ — không ai biết bản nào mới nhất. Người mới join mất hàng giờ tìm context trước khi làm việc được.</p>
+      </div>
+      <div class="card card-red">
+        <p class="bold text-red mb-8" style="font-size:0.95em">🔄 Context mất khi handoff</p>
+        <p class="body">Dev nhận story thiếu context → hỏi ngược lại BA/PO nhiều lần → delay cả sprint. Không có format chuẩn nên mỗi người handoff một kiểu.</p>
+      </div>
+      <div class="card card-red">
+        <p class="bold text-red mb-8" style="font-size:0.95em">🤖 Mỗi người dùng AI khác nhau</p>
+        <p class="body">Không có prompt chuẩn → chất lượng output dao động lớn giữa các thành viên. Không reproduce được — người này làm tốt, người kia ra kết quả khác hẳn.</p>
+      </div>
+      <div class="card card-red">
+        <p class="bold text-red mb-8" style="font-size:0.95em">🗂️ Đa repo phức tạp</p>
+        <p class="body">Feature đụng 2–3 repo (octavia, octavia-dashboard...) — không ai biết thay đổi ảnh hưởng đến đâu. Dev phải tự scan code thủ công, dễ miss.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      💡 <strong>FCI BMad Kit giải quyết tất cả:</strong> agent chuẩn hóa cho từng vai, luồng handoff rõ ràng qua file Git — mỗi người làm việc trên máy mình, không cần server chung.
+    </div>
+
+    <div style="margin-top:24px; padding:20px; background:#fff; border:1px solid var(--gray-200); border-radius:10px">
+      <p class="bold text-navy mb-12" style="font-size:0.95em">Trước và sau khi có FCI BMad Kit</p>
+      <table class="fci-table">
+        <thead><tr><th>Trước</th><th>Sau (với FCI BMad Kit)</th></tr></thead>
+        <tbody>
+          <tr><td>Tài liệu rải rác, không ai biết bản mới</td><td>Mọi artifact lưu đúng path trong repo <code>docs</code>, agent tự commit</td></tr>
+          <tr><td>Handoff bằng miệng hoặc Slack → mất</td><td>File handoff chuẩn format, lưu git, ai cũng đọc được</td></tr>
+          <tr><td>Mỗi người prompt AI theo kiểu riêng</td><td>Persona chuẩn, menu chuẩn — output nhất quán</td></tr>
+          <tr><td>Dev tự scan code 2-3 repo thủ công</td><td>Codegraph MCP: 1 câu query → biết ngay blast radius</td></tr>
+          <tr><td>PO/BA phải biết git để share docs</td><td>Agent tự pull/push — user chỉ trả lời có / không</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: AGENTS ──────────────────────────────────────────── -->
+<div class="page" id="page-agents">
+  <div class="page-header">
+    <h1>🤖 4 Agent FCI BMad Kit</h1>
+    <p class="subtitle">Mỗi agent = 1 persona có tên + bộ menu hành động + tích hợp Git & Codegraph tự động</p>
+  </div>
+  <div class="page-body">
+    <div class="grid-4" style="margin-bottom:24px">
+      <div class="agent-card">
+        <div class="cmd">/fci-po</div>
+        <div class="a-name">Thanh</div>
+        <div class="role">Product Owner</div>
+        <hr>
+        <div class="desc">Chỉ viết PRD<br>CC · Sign-off</div>
+      </div>
+      <div class="agent-card">
+        <div class="cmd">/fci-ba</div>
+        <div class="a-name">Vanh</div>
+        <div class="role">Business Analyst</div>
+        <hr>
+        <div class="desc">Epics · Stories · Clarify<br>Handoff sang Dev + Jira</div>
+      </div>
+      <div class="agent-card">
+        <div class="cmd">/fci-dev</div>
+        <div class="a-name">Zitech</div>
+        <div class="role">Developer</div>
+        <hr>
+        <div class="desc">Đọc code · Codegraph<br>Tasks · Handoff sang Tester</div>
+      </div>
+      <div class="agent-card">
+        <div class="cmd">/fci-tester</div>
+        <div class="a-name">Hanh</div>
+        <div class="role">QA Tester</div>
+        <hr>
+        <div class="desc">Test Plan · Execute<br>Pass / Bug report</div>
+      </div>
+    </div>
+
+    <div class="card card-dark" style="padding:20px 24px; margin-bottom:16px">
+      <p class="bold text-teal mb-12" style="font-size:0.9em; letter-spacing:1px">⚡ Mỗi agent được đóng gói gồm</p>
+      <div class="grid-3" style="gap:12px">
+        <div style="padding:12px; background:rgba(255,255,255,.05); border-radius:8px; border:1px solid rgba(255,255,255,.08)">
+          <p class="bold text-white mb-4" style="font-size:0.85em">customize.toml</p>
+          <p class="small text-muted">Persona · activation steps · persistent facts · menu definitions</p>
+        </div>
+        <div style="padding:12px; background:rgba(255,255,255,.05); border-radius:8px; border:1px solid rgba(255,255,255,.08)">
+          <p class="bold text-white mb-4" style="font-size:0.85em">Git automation</p>
+          <p class="small text-muted">Auto pull khi khởi động · auto push khi xong · rebase tự động</p>
+        </div>
+        <div style="padding:12px; background:rgba(255,255,255,.05); border-radius:8px; border:1px solid rgba(255,255,255,.08)">
+          <p class="bold text-white mb-4" style="font-size:0.85em">Codegraph MCP</p>
+          <p class="small text-muted">Context-aware code reading · multi-repo · baked vào activation</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Cách dùng:</strong> Trong Claude Code, gõ <code>/fci-po</code>, <code>/fci-ba</code>, <code>/fci-dev</code>, hoặc <code>/fci-tester</code> — agent tự load persona + hỏi pull + show menu.
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: BMAD ────────────────────────────────────────────── -->
+<div class="page" id="page-bmad">
+  <div class="page-header">
+    <h1>⚡ Kế thừa từ BMad Method</h1>
+    <p class="subtitle">Những gì chúng ta dùng sẵn từ cộng đồng — không cần viết lại</p>
+  </div>
+  <div class="page-body">
+    <div class="grid-2" style="gap:20px; margin-bottom:20px; align-items:start">
+      <div>
+        <p class="section-title">Modules kế thừa</p>
+        <div class="card card-blue mb-12">
+          <p class="bold mb-12" style="color:#1E40AF; font-size:0.9em">Module <code>bmm</code> — built-in (cài cùng BMad)</p>
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-prd</code>
+              <span class="small text-gray">Viết Product Requirements Document</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-create-epics-and-stories</code>
+              <span class="small text-gray">Tạo Epic + Story từ PRD</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-dev-story</code>
+              <span class="small text-gray">Đọc + implement story với AI</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-quick-dev</code>
+              <span class="small text-gray">Phát triển nhanh không cần story đầy đủ</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-code-review</code>
+              <span class="small text-gray">Review code theo tiêu chí chuẩn</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-investigate</code>
+              <span class="small text-gray">Điều tra bug / vấn đề kỹ thuật</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #BFDBFE">
+              <code style="background:#EFF6FF; color:#1E40AF; font-size:0.82em">bmad-document-project</code>
+              <span class="small text-gray">Tự động tạo project-context.md</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-teal">
+          <p class="bold mb-12" style="color:#166534; font-size:0.9em">Module <code>tea</code> — external (cài riêng)</p>
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #6EE7B7">
+              <code style="background:#F0FDF4; color:#166534; font-size:0.82em">bmad-testarch-automate</code>
+              <span class="small text-gray">Tạo test automation từ test plan</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #6EE7B7">
+              <code style="background:#F0FDF4; color:#166534; font-size:0.82em">bmad-testarch-test-review</code>
+              <span class="small text-gray">Review test plan và test cases</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:7px 10px; background:white; border-radius:6px; border:1px solid #6EE7B7">
+              <code style="background:#F0FDF4; color:#166534; font-size:0.82em">bmad-testarch-trace</code>
+              <span class="small text-gray">Trace coverage: AC ↔ test case</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="section-title">Customization Layering</p>
+        <div class="card mb-16">
+          <p class="body mb-12">BMad cung cấp hệ thống <strong>3-layer override</strong> — FCI dùng đúng kiến trúc này để customize agent:</p>
+          <div style="display:flex; flex-direction:column; gap:0">
+            <div style="padding:14px 16px; background:var(--gray-100); border-radius:8px 8px 0 0; border:1px solid var(--gray-200)">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <code class="text-gray">customize.toml</code>
+                <span class="tag" style="background:#E5E7EB; color:#6B7280; font-size:0.65em">Kit defaults</span>
+              </div>
+              <p class="xsmall text-gray mb-0">Cấu hình gốc của kit — baked vào source code FCI</p>
+            </div>
+            <div style="padding:14px 16px; background:#EFF6FF; border:1px solid #BFDBFE; border-top:none">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <code style="color:#1E40AF; background:#DBEAFE">_bmad/custom/fci-po.toml</code>
+                <span class="tag tag-blue" style="font-size:0.65em">Team · git commit</span>
+              </div>
+              <p class="xsmall mb-0" style="color:#1E40AF">Override cho toàn team — commit vào repo</p>
+            </div>
+            <div style="padding:14px 16px; background:var(--teal-light); border-radius:0 0 8px 8px; border:1px solid #6EE7B7; border-top:none">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <code style="color:var(--teal-d); background:#D1FAF0">_bmad/custom/fci-po.user.toml</code>
+                <span class="tag tag-teal" style="font-size:0.65em">Personal · gitignore</span>
+              </div>
+              <p class="xsmall text-teal mb-0" style="color:var(--teal-d)">Override cá nhân — không commit, không ảnh hưởng team</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          <strong>Quy tắc merge:</strong> Scalar → ghi đè · Array → append · Array-of-tables → merge theo key <code>code</code><br>
+          <span style="font-weight:400; margin-top:4px; display:block">Kiến trúc của BMad — FCI dùng đúng như thiết kế, không hack.</span>
+        </div>
+
+        <div class="card mt-16" style="border-left:4px solid var(--teal)">
+          <p class="bold text-navy mb-8" style="font-size:0.88em">FCI dispatch như thế nào?</p>
+          <p class="body">Khi bạn chọn menu trong agent FCI, agent không tự xử lý mà <strong>dispatch sang skill BMad</strong> tương ứng. FCI chỉ thêm context (repo, handoff path) trước khi gọi.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: PERSONA ─────────────────────────────────────────── -->
+<div class="page" id="page-persona">
+  <div class="page-header">
+    <h1>👤 ① Persona có tên & tính cách cụ thể</h1>
+    <p class="subtitle">FCI Custom — BMad gốc để agent trừu tượng; FCI đặt tên, vai trò, phong cách giao tiếp rõ ràng</p>
+  </div>
+  <div class="page-body">
+    <div class="highlight-box mb-20">
+      💡 <strong>Tại sao đặt tên?</strong> Agent có persona cụ thể → <strong>ít hallucinate hơn</strong>, nhất quán hơn, "biết mình là ai" và không lấn sang vai trò khác. Mỗi persona có bộ nguyên tắc riêng được baked vào system prompt.
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div class="persona-row" style="border-left-color:var(--navy)">
+        <div style="width:36px; height:36px; border-radius:10px; background:var(--navy); display:flex; align-items:center; justify-content:center; font-size:1.2em; flex-shrink:0">📋</div>
+        <div style="flex:1">
+          <p class="bold text-navy mb-4" style="font-size:0.95em">Thanh — Product Owner &nbsp;<code style="font-size:0.75em">/fci-po</code></p>
+          <p class="body mb-0">Chỉ viết PRD · Business value first · Không nói kỹ thuật, không estimate · Sau khi PRD xong → nhắc user chuyển sang <code>/fci-ba</code> để tạo Epics/Stories · Sign-off <em>chỉ</em> khi success metrics đã được Tester verified</p>
+        </div>
+      </div>
+
+      <div class="persona-row" style="border-left-color:#1E40AF">
+        <div style="width:36px; height:36px; border-radius:10px; background:#1E40AF; display:flex; align-items:center; justify-content:center; font-size:1.2em; flex-shrink:0">📊</div>
+        <div style="flex:1">
+          <p class="bold mb-4" style="font-size:0.95em; color:#1E40AF">Vanh — Business Analyst &nbsp;<code style="font-size:0.75em">/fci-ba</code></p>
+          <p class="body mb-0">Story chuẩn INVEST · Dùng Codegraph để hiểu constraint kỹ thuật <em>mà không viết code</em> · Hỏi PO khi yêu cầu mơ hồ · Luôn ghi repo liên quan vào story để Dev biết</p>
+        </div>
+      </div>
+
+      <div class="persona-row" style="border-left-color:#065F46">
+        <div style="width:36px; height:36px; border-radius:10px; background:#065F46; display:flex; align-items:center; justify-content:center; font-size:1.2em; flex-shrink:0">⚙️</div>
+        <div style="flex:1">
+          <p class="bold mb-4" style="font-size:0.95em; color:#065F46">Zitech — Developer &nbsp;<code style="font-size:0.75em">/fci-dev</code></p>
+          <p class="body mb-0">Nói bằng file path + Codegraph finding, không dùng ngôn ngữ chung chung · Follow pattern có sẵn, không tự phát minh · Hỏi BA khi AC mơ hồ — <em>không tự giả định</em> · Chạy AN trước khi đụng code</p>
+        </div>
+      </div>
+
+      <div class="persona-row" style="border-left-color:#7C2D12">
+        <div style="width:36px; height:36px; border-radius:10px; background:#7C2D12; display:flex; align-items:center; justify-content:center; font-size:1.2em; flex-shrink:0">🧪</div>
+        <div style="flex:1">
+          <p class="bold mb-4" style="font-size:0.95em; color:#7C2D12">Hanh — QA Tester &nbsp;<code style="font-size:0.75em">/fci-tester</code></p>
+          <p class="body mb-0">Mindset: phá vỡ và tìm edge case, không verify hời hợt · Không bỏ case nào · Không sign-off khi còn Critical/High bug · Không sửa bug — chỉ báo Dev qua file BUG handoff</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-navy mt-20">
+      <p class="bold text-navy mb-8" style="font-size:0.9em">Cách hoạt động trong thực tế</p>
+      <p class="body">Khi gõ <code>/fci-dev</code>, agent tự nhận diện mình là Zitech. Nếu user hỏi về business requirement, agent sẽ từ chối và redirect sang Vanh (/fci-ba). Ranh giới vai trò được giữ chặt — không lẫn lộn trách nhiệm.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: MULTI-REPO ──────────────────────────────────────── -->
+<div class="page" id="page-multirepo">
+  <div class="page-header">
+    <h1>🗂️ ② Multi-repo Workspace + Git Automation</h1>
+    <p class="subtitle">FCI Custom — BMad gốc là single-repo; FCI xây thêm toàn bộ lớp multi-repo và git tự động</p>
+  </div>
+  <div class="page-body">
+    <div class="grid-2" style="gap:20px; align-items:start; margin-bottom:20px">
+      <div>
+        <p class="section-title">Workspace Layout</p>
+        <div class="code-block code-teal mb-16">workspace/
+├── _bmad/            ← BMad + module FCI
+├── <span style="color:#00E5C9; font-weight:700">docs/             ← HUB CHIA SẺ (git)</span>
+│   ├── workspace.yml   ← registry repo
+│   ├── handoff/        ← file handoff
+│   ├── PRDs/
+│   ├── Epics/
+│   └── Stories/
+├── <span style="color:#93C5FD">octavia/          ← app repo</span>
+│   └── docs/project-context.md
+└── <span style="color:#93C5FD">octavia-dashboard/</span>
+    └── docs/project-context.md</div>
+
+        <p class="section-title">Clone theo role</p>
+        <table class="fci-table">
+          <thead><tr><th>Role</th><th>Repos cần clone</th><th>Codegraph</th></tr></thead>
+          <tbody>
+            <tr><td>📋 PO</td><td>Chỉ <code>docs</code></td><td>Không cần</td></tr>
+            <tr><td>📊 BA</td><td><code>docs</code> + app repo</td><td>✅ Tự build khi init</td></tr>
+            <tr><td>⚙️ Dev</td><td><code>docs</code> + app repo</td><td>✅ Tự build khi init</td></tr>
+            <tr><td>🧪 Tester</td><td><code>docs</code> + app repo</td><td>✅ Tự build khi init</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <p class="section-title">Activation Flow — xảy ra mỗi lần gọi agent</p>
+        <div class="step-list mb-16">
+          <div class="step-item">
+            <div class="step-num" style="background:var(--teal)">1</div>
+            <div>
+              <p class="bold text-navy mb-4" style="font-size:0.88em">Hỏi pull từ repo docs</p>
+              <p class="small text-gray mb-0">Agent tự chạy <code>git pull</code> — user chỉ gõ "có" hoặc "không". Không cần nhớ lệnh git.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="background:var(--teal)">2</div>
+            <div>
+              <p class="bold text-navy mb-4" style="font-size:0.88em">Đọc workspace.yml + list_repos</p>
+              <p class="small text-gray mb-0">Biết dự án gồm những repo nào, URL clone của từng repo.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="background:var(--teal)">3</div>
+            <div>
+              <p class="bold text-navy mb-4" style="font-size:0.88em">Auto-detect repo liên quan</p>
+              <p class="small text-gray mb-0">Đọc handoff/story để biết feature cần đụng repo nào — không hỏi khi đã rõ.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="background:var(--navy)">4</div>
+            <div>
+              <p class="bold text-navy mb-4" style="font-size:0.88em">Làm việc → Hỏi push</p>
+              <p class="small text-gray mb-0">Sau khi xong, agent tự <code>git add + commit + push</code>. Nếu bị reject, tự rebase rồi push lại.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          PO/BA <strong>không cần biết git</strong> — agent làm hết. Bạn chỉ trả lời có / không.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: HANDOFF ─────────────────────────────────────────── -->
+<div class="page" id="page-handoff">
+  <div class="page-header">
+    <h1>📂 ③ Handoff chuẩn hóa & Artifacts Convention</h1>
+    <p class="subtitle">FCI Custom — agent tự tạo file handoff đúng format; không để người dùng tự nhớ cấu trúc</p>
+  </div>
+  <div class="page-body">
+    <p class="section-title">Luồng handoff</p>
+    <div class="flow-row mb-20" style="margin-bottom:24px">
+      <div class="flow-node" style="background:var(--navy)">📋 PO<br><small style="font-weight:400; opacity:.7">Thanh</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node" style="background:#1E40AF">📊 BA<br><small style="font-weight:400; opacity:.7">Vanh</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node" style="background:#065F46">⚙️ Dev<br><small style="font-weight:400; opacity:.7">Zitech</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node" style="background:#7C2D12">🧪 Tester<br><small style="font-weight:400; opacity:.7">Hanh</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node" style="background:var(--teal-d)">✅ PO<br><small style="font-weight:400; opacity:.7">Sign-off</small></div>
+    </div>
+
+    <div class="grid-2" style="gap:20px; margin-bottom:20px; align-items:start">
+      <div>
+        <p class="section-title">Handoff files (trong <code>docs/handoff/</code>)</p>
+        <div style="display:flex; flex-direction:column; gap:6px">
+          <div style="padding:10px 14px; background:#F0F4FF; border:1px solid #C7D2FE; border-radius:8px; border-left:4px solid var(--navy)">
+            <code style="color:var(--navy); font-size:0.82em">po-to-ba-[feature].md</code>
+            <p class="xsmall text-gray mb-0 mt-4">PO → BA: requirement overview, business context</p>
+          </div>
+          <div style="padding:10px 14px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; border-left:4px solid #1E40AF">
+            <code style="color:#1E40AF; font-size:0.82em">po-ba-to-dev-[feature].md</code>
+            <p class="xsmall mb-0 mt-4" style="color:#3B82F6">BA → Dev: stories + <strong>Jira link bắt buộc</strong> từng story</p>
+          </div>
+          <div style="padding:10px 14px; background:#F0FDF4; border:1px solid #6EE7B7; border-radius:8px; border-left:4px solid #065F46">
+            <code style="color:#065F46; font-size:0.82em">dev-to-tester-[story-id].md</code>
+            <p class="xsmall mb-0 mt-4" style="color:#065F46">Dev → Tester: branch · PR · how-to-test · known edge cases</p>
+          </div>
+          <div style="padding:10px 14px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:8px; border-left:4px solid #7C2D12">
+            <code style="color:#7C2D12; font-size:0.82em">tester-to-po-[id]-approved.md</code>
+            <p class="xsmall mb-0 mt-4" style="color:#7C2D12">Tester → PO: pass, kèm evidence</p>
+          </div>
+          <div style="padding:10px 14px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:8px; border-left:4px solid #991B1B">
+            <code style="color:#991B1B; font-size:0.82em">tester-to-dev-BUG-[id].md</code>
+            <p class="xsmall mb-0 mt-4" style="color:#991B1B">Tester → Dev: bug report, severity, steps to reproduce</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="section-title">Artifacts Convention</p>
+        <table class="fci-table mb-16">
+          <thead><tr><th>Loại artifact</th><th>Đường dẫn chuẩn</th></tr></thead>
+          <tbody>
+            <tr><td>PRD</td><td><code>docs/PRDs/prd-[name].md</code></td></tr>
+            <tr><td>Epic</td><td><code>docs/Epics/epic-[N]-[name].md</code></td></tr>
+            <tr><td>Story</td><td><code>docs/Stories/Epic-[N]/story-[N].[M].md</code></td></tr>
+            <tr><td>Tasks</td><td><code>docs/tasks/STORY-[ID]-tasks.md</code></td></tr>
+            <tr><td>Test Plan</td><td><code>docs/test-plans/STORY-[ID]-test-plan.md</code></td></tr>
+            <tr><td>Tech context</td><td><code>&lt;app-repo&gt;/docs/project-context.md</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="highlight-box">
+          Agent <strong>tự biết lưu đâu</strong> nhờ <code>persistent_facts</code> trong customize.toml. Không hỏi user, không sai đường dẫn.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: CODEGRAPH ───────────────────────────────────────── -->
+<div class="page" id="page-codegraph">
+  <div class="page-header">
+    <h1>🔍 ④ Codegraph MCP — đọc code thông minh</h1>
+    <p class="subtitle">FCI Custom — tích hợp trực tiếp vào activation flow; không phải addon tùy chọn</p>
+  </div>
+  <div class="page-body">
+    <div class="grid-2" style="gap:20px; align-items:start; margin-bottom:20px">
+      <div>
+        <p class="section-title">Là gì?</p>
+        <div class="card card-teal mb-16">
+          <p class="bold mb-8" style="color:var(--teal-d); font-family:monospace">@optave/codegraph</p>
+          <p class="body mb-0">Graph-index toàn bộ codebase → khi query trả về <strong>symbol / dependency / impact</strong> thay vì đọc raw file. Tiết kiệm token và nhanh hơn nhiều so với đọc file thủ công.</p>
+        </div>
+
+        <p class="section-title">Ai dùng?</p>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <div class="card" style="border-left:4px solid #1E40AF">
+            <p class="bold mb-4" style="color:#1E40AF; font-size:0.88em">📊 BA (Vanh)</p>
+            <p class="small text-gray mb-0">Hiểu constraint kỹ thuật trước khi viết story → story thực tế hơn, ít hỏi ngược lại Dev.</p>
+          </div>
+          <div class="card" style="border-left:4px solid #065F46">
+            <p class="bold mb-4" style="color:#065F46; font-size:0.88em">⚙️ Dev (Zitech) — bắt buộc</p>
+            <p class="small text-gray mb-0">Chạy menu <strong>AN</strong> trước khi đụng code → biết blast radius, tránh phá module khác.</p>
+          </div>
+          <div class="card" style="border-left:4px solid #7C2D12">
+            <p class="bold mb-4" style="color:#7C2D12; font-size:0.88em">🧪 Tester (Hanh)</p>
+            <p class="small text-gray mb-0">Navigate codebase khi viết test plan → biết chỗ nào cần cover edge case.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="section-title">Cách dùng</p>
+        <div class="code-block mb-16">// 1 MCP server phục vụ nhiều repo
+// --multi-repo flag khi start server
+
+// Xem repo đã đăng ký:
+codegraph.list_repos()
+
+// Lấy context của repo:
+codegraph.context({
+  repo: <span style="color:#FCD34D">"octavia"</span>
+})
+
+// Tìm impact của một symbol:
+codegraph.impact({
+  repo: <span style="color:#FCD34D">"octavia-dashboard"</span>,
+  symbol: <span style="color:#FCD34D">"HealthCheck"</span>
+})
+
+// Tìm định nghĩa symbol:
+codegraph.definition({
+  repo: <span style="color:#93C5FD">"octavia"</span>,
+  symbol: <span style="color:#93C5FD">"WeightCalculator"</span>
+})</div>
+
+        <div class="warn-box">
+          <strong>⚠️ Quan trọng — đã baked vào agent:</strong><br>
+          Codegraph rất tốt để <strong>LOCATE</strong> (tìm symbol, file, import chain). Nhưng call-graph (<code>impact</code>) có thể <strong>thiếu edge trên Python</strong> vì dynamic typing (octavia dùng Python).<br><br>
+          Agent được hướng dẫn <strong>đối chiếu với grep/ripgrep</strong> trước khi kết luận blast radius — không tin tuyệt đối vào call-graph một mình.
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-navy">
+      <p class="bold text-navy mb-8" style="font-size:0.9em">Node 22 requirement</p>
+      <p class="body mb-0">Codegraph dùng <code>better-sqlite3</code> với prebuilt binary — cần <strong>Node.js 22</strong>. Script cài đặt tự kiểm tra và báo lỗi nếu version không đúng.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: MENUS ───────────────────────────────────────────── -->
+<div class="page" id="page-menus">
+  <div class="page-header">
+    <h1>📋 ⑤ Menu Action FCI-specific</h1>
+    <p class="subtitle">FCI Custom — dispatch sang BMad skill hoặc logic riêng do FCI định nghĩa</p>
+  </div>
+  <div class="page-body">
+    <div class="info-box mb-20">
+      Các skill <code>PRD · Stories · Code Review · Investigate · Test Arch</code> → vẫn dispatch thẳng sang <strong>BMad (bmm + tea)</strong>. Bên dưới là các menu <em>FCI tự định nghĩa</em> không có trong BMad gốc.
+    </div>
+
+    <div class="grid-3" style="gap:16px">
+      <div>
+        <div style="padding:10px 14px; background:var(--navy); border-radius:8px 8px 0 0; display:flex; align-items:center; gap:8px">
+          <span style="font-size:1.1em">📋</span>
+          <div>
+            <p class="bold text-white mb-0" style="font-size:0.88em">PO — Thanh</p>
+            <p class="xsmall mb-0" style="color:rgba(255,255,255,.5); font-family:monospace">/fci-po</p>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid var(--gray-200); border-top:none; border-radius:0 0 8px 8px; padding:12px">
+          <div style="padding:8px 10px; background:#FFF7ED; border:1px solid #FED7AA; border-radius:6px; margin-bottom:10px">
+            <p style="margin:0; font-size:0.75em; color:#92400E;">💡 Sau khi PRD xong → chuyển sang <code>/fci-ba</code> để tạo Epics & Stories</p>
+          </div>
+          <div class="menu-item">
+            <div class="menu-code" style="background:var(--navy)">PRD</div>
+            <div class="menu-desc">Viết mới, cập nhật, hoặc validate PRD</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-code" style="background:var(--navy)">CC</div>
+            <div class="menu-desc">Review Stories từ BA — accept hoặc reject với feedback</div>
+          </div>
+          <div class="menu-item" style="margin-bottom:0">
+            <div class="menu-code" style="background:var(--navy)">SO</div>
+            <div class="menu-desc">Sign-off — đối chiếu kết quả Tester với success metrics PRD gốc, chỉ approve khi đủ</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="padding:10px 14px; background:#065F46; border-radius:8px 8px 0 0; display:flex; align-items:center; gap:8px">
+          <span style="font-size:1.1em">⚙️</span>
+          <div>
+            <p class="bold text-white mb-0" style="font-size:0.88em">Dev — Zitech</p>
+            <p class="xsmall mb-0" style="color:rgba(255,255,255,.5); font-family:monospace">/fci-dev</p>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid var(--gray-200); border-top:none; border-radius:0 0 8px 8px; padding:12px">
+          <div class="menu-item">
+            <div class="menu-code" style="background:#065F46">AN</div>
+            <div class="menu-desc">Analyze — chạy Codegraph + grep đối chiếu, Python-aware blast radius analysis</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-code" style="background:#065F46">CT</div>
+            <div class="menu-desc">Create Tasks — chia story thành task list chi tiết, lưu vào <code>docs/tasks/</code></div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-code" style="background:#065F46">BC</div>
+            <div class="menu-desc">Bootstrap Context — chạy <code>bmad-document-project</code> tạo project-context.md (1 lần khi init repo mới)</div>
+          </div>
+          <div class="menu-item" style="margin-bottom:0">
+            <div class="menu-code" style="background:#065F46">HO</div>
+            <div class="menu-desc">Handoff — tạo <code>dev-to-tester</code> handoff: branch, PR link, how-to-test, edge cases</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="padding:10px 14px; background:#7C2D12; border-radius:8px 8px 0 0; display:flex; align-items:center; gap:8px">
+          <span style="font-size:1.1em">🧪</span>
+          <div>
+            <p class="bold text-white mb-0" style="font-size:0.88em">Tester — Hanh</p>
+            <p class="xsmall mb-0" style="color:rgba(255,255,255,.5); font-family:monospace">/fci-tester</p>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid var(--gray-200); border-top:none; border-radius:0 0 8px 8px; padding:12px">
+          <div class="menu-item">
+            <div class="menu-code" style="background:#7C2D12">EX</div>
+            <div class="menu-desc">Execute — chạy test cases từ test plan, ghi kết quả Pass/Fail + evidence/screenshot</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-code" style="background:#7C2D12">PA</div>
+            <div class="menu-desc">Pass — tạo handoff <code>tester-to-po-approved</code> khi tất cả AC pass</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-code" style="background:#7C2D12">BUG</div>
+            <div class="menu-desc">Bug Report — tạo <code>tester-to-dev-BUG</code>: severity · steps · expected vs actual</div>
+          </div>
+          <div class="menu-item" style="margin-bottom:0">
+            <div class="menu-code" style="background:#7C2D12">TR</div>
+            <div class="menu-desc">Trace — map AC ↔ test case coverage, quyết định quality gate có đạt không</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: WORKFLOW ────────────────────────────────────────── -->
+<div class="page" id="page-workflow">
+  <div class="page-header">
+    <h1>🔁 Workflow team — nhịp mỗi phiên làm việc</h1>
+    <p class="subtitle">Quy trình chuẩn từ đầu đến cuối, mọi người làm độc lập, điều phối qua Git</p>
+  </div>
+  <div class="page-body">
+    <p class="section-title mb-12">Nhịp mỗi phiên</p>
+    <div style="display:flex; gap:0; margin-bottom:24px; border-radius:10px; overflow:hidden; border:1px solid var(--gray-200)">
+      <div style="flex:1; padding:14px 16px; background:#F0F4FF; text-align:center; border-right:1px solid var(--gray-200)">
+        <div style="font-size:1.2em; margin-bottom:4px">🚀</div>
+        <p class="bold text-navy mb-0" style="font-size:0.82em">1. Gõ /fci-[vai]</p>
+      </div>
+      <div style="display:flex; align-items:center; padding:0 6px; color:var(--teal); font-size:1.2em">→</div>
+      <div style="flex:1; padding:14px 16px; background:var(--teal-light); text-align:center; border-right:1px solid var(--gray-200)">
+        <div style="font-size:1.2em; margin-bottom:4px">⬇️</div>
+        <p class="bold mb-0" style="font-size:0.82em; color:var(--teal-d)">2. Pull? → Có</p>
+      </div>
+      <div style="display:flex; align-items:center; padding:0 6px; color:var(--teal); font-size:1.2em">→</div>
+      <div style="flex:1; padding:14px 16px; background:#F0F4FF; text-align:center; border-right:1px solid var(--gray-200)">
+        <div style="font-size:1.2em; margin-bottom:4px">📋</div>
+        <p class="bold text-navy mb-0" style="font-size:0.82em">3. Chọn menu làm việc</p>
+      </div>
+      <div style="display:flex; align-items:center; padding:0 6px; color:var(--teal); font-size:1.2em">→</div>
+      <div style="flex:1; padding:14px 16px; background:var(--teal-light); text-align:center; border-right:1px solid var(--gray-200)">
+        <div style="font-size:1.2em; margin-bottom:4px">⬆️</div>
+        <p class="bold mb-0" style="font-size:0.82em; color:var(--teal-d)">4. Push? → Có</p>
+      </div>
+      <div style="display:flex; align-items:center; padding:0 6px; color:var(--teal); font-size:1.2em">→</div>
+      <div style="flex:1; padding:14px 16px; background:#F0F4FF; text-align:center">
+        <div style="font-size:1.2em; margin-bottom:4px">💬</div>
+        <p class="bold text-navy mb-0" style="font-size:0.82em">5. Ping người kế tiếp</p>
+      </div>
+    </div>
+
+    <p class="section-title">Ví dụ thực tế: Feature "Health-check weight" — đụng 2 repo</p>
+    <div style="display:flex; flex-direction:column; gap:0; border-radius:10px; overflow:hidden; border:1px solid var(--gray-200)">
+      <div style="display:flex; align-items:stretch; border-bottom:1px solid var(--gray-200)">
+        <div style="width:130px; padding:16px; background:var(--navy); display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; flex-shrink:0">
+          <span style="font-size:1.3em">📋</span>
+          <p class="bold text-white mb-0" style="font-size:0.82em">PO</p>
+          <p class="mb-0" style="font-size:0.7em; color:rgba(255,255,255,.5)">Thanh</p>
+        </div>
+        <div style="padding:16px 20px; flex:1; background:#fff">
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px">
+            <span class="tag tag-navy" style="font-size:0.7em">PRD</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-teal" style="font-size:0.7em">push</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span style="color:#D97706; font-size:0.78em; font-weight:700; background:#FFF7ED; padding:2px 8px; border-radius:4px; border:1px solid #FED7AA">switch → /fci-ba</span>
+          </div>
+          <p class="small text-gray mb-0">PRD ghi rõ <em>affected: octavia + octavia-dashboard</em> → cùng người dùng, chuyển sang /fci-ba để tạo Epics/Stories</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:stretch; border-bottom:1px solid var(--gray-200)">
+        <div style="width:130px; padding:16px; background:#1E40AF; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; flex-shrink:0">
+          <span style="font-size:1.3em">📊</span>
+          <p class="bold text-white mb-0" style="font-size:0.82em">BA (= PO)</p>
+          <p class="mb-0" style="font-size:0.7em; color:rgba(255,255,255,.5)">cùng người</p>
+        </div>
+        <div style="padding:16px 20px; flex:1; background:#fff">
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px">
+            <span class="tag tag-blue" style="font-size:0.7em">BP (đọc PRD)</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-blue" style="font-size:0.7em">DR (Epics)</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-blue" style="font-size:0.7em">MR (Stories)</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-blue" style="font-size:0.7em">WB (Jira link)</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-teal" style="font-size:0.7em">push + ping Dev</span>
+          </div>
+          <p class="small text-gray mb-0">BA dùng codegraph xem HealthCheck API structure → story có AC đúng với implementation; tự tạo handoff sang Dev</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:stretch; border-bottom:1px solid var(--gray-200)">
+        <div style="width:130px; padding:16px; background:#065F46; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; flex-shrink:0">
+          <span style="font-size:1.3em">⚙️</span>
+          <p class="bold text-white mb-0" style="font-size:0.82em">Dev</p>
+          <p class="mb-0" style="font-size:0.7em; color:rgba(255,255,255,.5)">Zitech</p>
+        </div>
+        <div style="padding:16px 20px; flex:1; background:#fff">
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px">
+            <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.7em">AN octavia</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.7em">code</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.7em">AN dashboard</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.7em">code</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.7em">HO</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-teal" style="font-size:0.7em">push 2 MR + ping Tester</span>
+          </div>
+          <p class="small text-gray mb-0">AN xác nhận WeightCalculator chỉ dùng trong 2 file → merge được độc lập</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:stretch; border-bottom:1px solid var(--gray-200)">
+        <div style="width:130px; padding:16px; background:#7C2D12; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; flex-shrink:0">
+          <span style="font-size:1.3em">🧪</span>
+          <p class="bold text-white mb-0" style="font-size:0.82em">Tester</p>
+          <p class="mb-0" style="font-size:0.7em; color:rgba(255,255,255,.5)">Hanh</p>
+        </div>
+        <div style="padding:16px 20px; flex:1; background:#fff">
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px">
+            <span class="tag" style="background:#FEE2E2; color:#7C2D12; font-size:0.7em">TP</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag" style="background:#FEE2E2; color:#7C2D12; font-size:0.7em">EX</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-teal" style="font-size:0.7em">✅ PA → push → ping PO</span>
+            <span class="bold text-gray" style="font-size:0.85em"> / </span>
+            <span class="tag tag-red" style="font-size:0.7em">❌ BUG → push → ping Dev</span>
+          </div>
+          <p class="small text-gray mb-0">Dùng TR trace 100% AC coverage trước khi quyết định PA</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:stretch">
+        <div style="width:130px; padding:16px; background:var(--teal-d); display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; flex-shrink:0">
+          <span style="font-size:1.3em">✅</span>
+          <p class="bold text-white mb-0" style="font-size:0.82em">PO</p>
+          <p class="mb-0" style="font-size:0.7em; color:rgba(255,255,255,.5)">Sign-off</p>
+        </div>
+        <div style="padding:16px 20px; flex:1; background:#fff">
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px">
+            <span class="tag tag-teal" style="font-size:0.7em">SO — đối chiếu success metrics</span>
+            <span style="color:var(--gray-500); font-size:0.85em">→</span>
+            <span class="tag tag-teal" style="font-size:0.7em">Đóng Epic</span>
+          </div>
+          <p class="small text-gray mb-0">Kiểm tra kết quả Tester có đáp ứng success metrics trong PRD gốc không trước khi sign-off</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: INSTALL ─────────────────────────────────────────── -->
+<div class="page" id="page-install">
+  <div class="page-header">
+    <h1>🚀 Cài đặt — 1 lệnh, dùng ngay</h1>
+    <p class="subtitle">Không cần config thủ công — script tự cài BMad + Codegraph + 4 agent</p>
+  </div>
+  <div class="page-body">
+    <div class="grid-2" style="gap:20px; margin-bottom:20px; align-items:start">
+      <div>
+        <p class="section-title">Single-repo (project riêng lẻ)</p>
+        <div class="code-block code-teal mb-12"># Trong thư mục project của bạn:
+curl -fsSL \
+  https://raw.githubusercontent.com/\
+  vncharles/fci-bmad-kit/main/install.sh \
+  | bash
+
+# Hoặc với custom options:
+<span style="color:#7EDDD0">USER_NAME="Trọng"</span> <span style="color:#7EDDD0">COMM_LANG="Vietnamese"</span> \
+  ./install.sh</div>
+        <div class="highlight-box mb-12">Script cài: BMad + module fci + Codegraph MCP + 4 agent. Không cần clone thủ công.</div>
+
+        <div class="card" style="border-left:4px solid var(--teal)">
+          <p class="bold text-navy mb-8" style="font-size:0.88em">Sau khi cài, gọi ngay trong Claude Code:</p>
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <code style="color:var(--navy)">/fci-po &nbsp;&nbsp;→ Thanh (Product Owner)</code>
+            <code style="color:#1E40AF">/fci-ba &nbsp;&nbsp;→ Vanh (Business Analyst)</code>
+            <code style="color:#065F46">/fci-dev &nbsp;→ Zitech (Developer)</code>
+            <code style="color:#7C2D12">/fci-tester → Hanh (QA Tester)</code>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="section-title">Multi-repo — Team mode</p>
+        <div class="code-block mb-12"># Trong workspace trống, chọn role:
+ROLE=po     ./init-workspace.sh
+ROLE=ba     ./init-workspace.sh
+ROLE=dev    ./init-workspace.sh
+ROLE=tester ./init-workspace.sh
+
+<span style="color:#6B7280"># Script hỏi URL repo docs →
+# đọc workspace.yml → clone app repo →
+# build codegraph → cài BMad → push</span></div>
+        <div class="highlight-box mb-12">Người <strong>đầu tiên</strong> khai báo repo → push workspace.yml → người sau chỉ paste URL docs repo.</div>
+
+        <div class="card card-navy">
+          <p class="bold text-navy mb-8" style="font-size:0.88em">workspace.yml — registry chung</p>
+          <div class="code-block" style="background:#1E2761; border-color:#4A7FD4; font-size:0.78em">project: lbaas
+docs_repo: git@gitlab.fci.vn:fci/docs.git
+repos:
+  - name: octavia
+    url: git@gitlab.fci.vn:fci/octavia.git
+    roles: [ba, dev, tester]
+  - name: octavia-dashboard
+    url: git@gitlab.fci.vn:fci/octavia-dashboard.git
+    roles: [ba, dev, tester]</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title">Prerequisites</p>
+    <div class="grid-4" style="gap:12px">
+      <div class="card" style="text-align:center; padding:14px">
+        <div style="font-size:1.5em; margin-bottom:6px">🟢</div>
+        <p class="bold text-navy mb-0" style="font-size:0.85em">Node.js 22+</p>
+        <p class="xsmall text-gray mb-0">Cho Codegraph</p>
+      </div>
+      <div class="card" style="text-align:center; padding:14px">
+        <div style="font-size:1.5em; margin-bottom:6px">🤖</div>
+        <p class="bold text-navy mb-0" style="font-size:0.85em">Claude Code</p>
+        <p class="xsmall text-gray mb-0">CLI tool của Anthropic</p>
+      </div>
+      <div class="card" style="text-align:center; padding:14px">
+        <div style="font-size:1.5em; margin-bottom:6px">🐙</div>
+        <p class="bold text-navy mb-0" style="font-size:0.85em">Git</p>
+        <p class="xsmall text-gray mb-0">SSH access vào repo</p>
+      </div>
+      <div class="card" style="text-align:center; padding:14px">
+        <div style="font-size:1.5em; margin-bottom:6px">📦</div>
+        <p class="bold text-navy mb-0" style="font-size:0.85em">BMad Method</p>
+        <p class="xsmall text-gray mb-0">Tự động cài qua script</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: CHEATSHEET ──────────────────────────────────────── -->
+<div class="page" id="page-cheatsheet">
+  <div class="page-header">
+    <h1>📌 Cheat-sheet — nhanh tay nhanh mắt</h1>
+    <p class="subtitle">Reference card cho mỗi role — in ra dán lên màn hình cũng được</p>
+  </div>
+  <div class="page-body">
+    <p class="section-title">Menu theo role</p>
+    <div class="cheat-row">
+      <div class="cheat-role" style="background:var(--navy)">📋 PO<small>/fci-po</small></div>
+      <div class="cheat-flow" style="color:var(--navy)">
+        <span class="tag tag-navy" style="font-size:0.72em">PRD</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span style="color:#D97706; font-size:0.82em; font-weight:700">switch → /fci-ba</span>
+        <span class="text-gray" style="margin:0 10px; font-weight:400">·</span>
+        <span style="color:var(--gray-500); font-size:0.8em">sau khi Tester xong: <strong>CC → SO</strong></span>
+      </div>
+    </div>
+    <div class="cheat-row">
+      <div class="cheat-role" style="background:#1E40AF">📊 BA<small>/fci-ba</small></div>
+      <div class="cheat-flow" style="color:#1E40AF">
+        <span class="tag tag-blue" style="font-size:0.72em">BP</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag tag-blue" style="font-size:0.72em">DR</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag tag-blue" style="font-size:0.72em">MR</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag tag-blue" style="font-size:0.72em">CB</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag tag-blue" style="font-size:0.72em">WB</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">&nbsp;|&nbsp;</span>
+        <span style="color:var(--gray-500); font-size:0.8em">mơ hồ: <strong>TR</strong></span>
+      </div>
+    </div>
+    <div class="cheat-row">
+      <div class="cheat-role" style="background:#065F46">⚙️ Dev<small>/fci-dev</small></div>
+      <div class="cheat-flow" style="color:#065F46">
+        <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.72em">AN</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.72em">CT</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.72em">DS / QD</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.72em">CR</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag" style="background:#D1FAE5; color:#065F46; font-size:0.72em">HO</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">&nbsp;|&nbsp;</span>
+        <span style="color:var(--gray-500); font-size:0.8em">repo mới: <strong>BC</strong></span>
+      </div>
+    </div>
+    <div class="cheat-row" style="margin-bottom:0">
+      <div class="cheat-role" style="background:#7C2D12">🧪 Tester<small>/fci-tester</small></div>
+      <div class="cheat-flow" style="color:#7C2D12">
+        <span class="tag" style="background:#FEE2E2; color:#7C2D12; font-size:0.72em">TP</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag" style="background:#FEE2E2; color:#7C2D12; font-size:0.72em">EX</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">→</span>
+        <span class="tag tag-teal" style="font-size:0.72em">PA</span>
+        <span style="color:var(--gray-500); font-size:0.8em; margin:0 6px">(pass)</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">/</span>
+        <span class="tag tag-red" style="font-size:0.72em">BUG</span>
+        <span style="color:var(--gray-500); font-size:0.8em; margin:0 6px">(fail)</span>
+        <span class="text-gray" style="margin:0 4px; font-weight:400">&nbsp;|&nbsp;</span>
+        <span style="color:var(--gray-500); font-size:0.8em">coverage: <strong>TR</strong></span>
+      </div>
+    </div>
+
+    <div class="highlight-box mt-20 mb-20">
+      <strong>Nhịp mỗi phiên:</strong> pull? có → xem handoff → làm việc theo menu → push? có → ping người kế tiếp
+    </div>
+
+    <p class="section-title">Lưu ý vận hành</p>
+    <div class="grid-3" style="gap:12px">
+      <div class="card" style="border-top:3px solid var(--teal)">
+        <p class="bold text-navy mb-8" style="font-size:0.88em">💬 Thông báo thủ công</p>
+        <p class="small text-gray mb-0">Git không tự ping người khác — sau mỗi push cần <strong>tự nhắn Slack/GitLab</strong> cho người nhận pull.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue)">
+        <p class="bold text-navy mb-8" style="font-size:0.88em">🔄 Rebuild Codegraph</p>
+        <p class="small text-gray mb-0">Khi code thay đổi nhiều, chạy: <code>codegraph build &lt;repo-name&gt;</code> để index lại. Mỗi repo build riêng.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--red)">
+        <p class="bold text-navy mb-8" style="font-size:0.88em">⚡ Xung đột git</p>
+        <p class="small text-gray mb-0">Conflict thật rất hiếm (mỗi vai làm trên file riêng). Nếu xảy ra → nhờ Dev resolve, không tự sửa.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main><!-- /main -->
+</div><!-- /app -->
+
+<script>
+const navItems = document.querySelectorAll('.nav-item');
+const pages    = document.querySelectorAll('.page');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const target = item.dataset.page;
+    navItems.forEach(n => n.classList.remove('active'));
+    pages.forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    const page = document.getElementById('page-' + target);
+    if (page) { page.classList.add('active'); document.getElementById('main').scrollTop = 0; }
+  });
+});
+</script>
+</body>
+</html>
