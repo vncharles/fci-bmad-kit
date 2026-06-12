@@ -43,6 +43,26 @@ cg_node_ok() {
   [ "$major" -ge 22 ]
 }
 
+cg_is_windows() {
+  case "${OSTYPE:-}" in msys*|cygwin*|mingw*) return 0 ;; esac
+  case "$(uname -s 2>/dev/null)" in MINGW*|CYGWIN*|MSYS*) return 0 ;; esac
+  return 1
+}
+
+cg_bootstrap_node_via_fnm() {
+  if ! command -v fnm >/dev/null 2>&1; then
+    echo "✗ Chưa có fnm trên Windows." >&2
+    echo "  Cài fnm: winget install Schniz.fnm" >&2
+    echo "  Sau đó mở lại Git Bash và chạy lại script." >&2
+    exit 1
+  fi
+  eval "$(fnm env --shell bash 2>/dev/null)" || true
+  echo "  • fnm install $NODE_VERSION && fnm use $NODE_VERSION"
+  fnm install "$NODE_VERSION"
+  fnm use "$NODE_VERSION"
+  eval "$(fnm env --shell bash 2>/dev/null)" || true
+}
+
 cg_bootstrap_node_via_nvm() {
   export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
   if [ ! -s "$NVM_DIR/nvm.sh" ]; then
@@ -56,6 +76,14 @@ cg_bootstrap_node_via_nvm() {
   nvm use "$NODE_VERSION"
 }
 
+cg_bootstrap_node() {
+  if cg_is_windows; then
+    cg_bootstrap_node_via_fnm
+  else
+    cg_bootstrap_node_via_nvm
+  fi
+}
+
 cg_require_node() {
   if cg_node_ok; then return 0; fi
   if command -v node >/dev/null 2>&1; then
@@ -64,12 +92,15 @@ cg_require_node() {
     echo "✗ Máy chưa cài Node — codegraph cần Node để cài qua npm." >&2
   fi
   if [ "$AUTO_INSTALL_NODE" != "1" ]; then
-    echo "  Khắc phục: cài Node >=20.12 rồi chạy lại, hoặc AUTO_INSTALL_NODE=1 để tự cài." >&2
+    local hint="nvm install $NODE_VERSION && nvm use $NODE_VERSION"
+    cg_is_windows && hint="fnm install $NODE_VERSION && fnm use $NODE_VERSION"
+    echo "  Khắc phục: cài Node >=22 (vd: $hint) rồi chạy lại, hoặc AUTO_INSTALL_NODE=1 để tự cài." >&2
     exit 1
   fi
-  echo "▶ AUTO_INSTALL_NODE=1 — đang tự cài Node $NODE_VERSION qua nvm..."
-  cg_bootstrap_node_via_nvm
-  cg_node_ok || { echo "✗ Vẫn chưa có Node hợp lệ. Mở terminal mới, 'nvm use $NODE_VERSION' rồi thử lại." >&2; exit 1; }
+  local mgr="nvm"; cg_is_windows && mgr="fnm"
+  echo "▶ AUTO_INSTALL_NODE=1 — đang tự cài Node $NODE_VERSION qua $mgr..."
+  cg_bootstrap_node
+  cg_node_ok || { echo "✗ Vẫn chưa có Node hợp lệ. Mở terminal mới, '$mgr use $NODE_VERSION' rồi thử lại." >&2; exit 1; }
 }
 
 # ── Cài codegraph CLI (@optave/codegraph) ───────────────────────────────────────

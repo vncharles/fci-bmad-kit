@@ -29,6 +29,26 @@ node_ok() {
   [ "$major" -gt 20 ] || { [ "$major" -eq 20 ] && [ "$minor" -ge 12 ]; }
 }
 
+is_windows() {
+  case "${OSTYPE:-}" in msys*|cygwin*|mingw*) return 0 ;; esac
+  case "$(uname -s 2>/dev/null)" in MINGW*|CYGWIN*|MSYS*) return 0 ;; esac
+  return 1
+}
+
+bootstrap_node_via_fnm() {
+  if ! command -v fnm >/dev/null 2>&1; then
+    echo "✗ Chưa có fnm trên Windows." >&2
+    echo "  Cài fnm: winget install Schniz.fnm" >&2
+    echo "  Sau đó mở lại Git Bash và chạy lại script." >&2
+    exit 1
+  fi
+  eval "$(fnm env --shell bash 2>/dev/null)" || true
+  echo "  • fnm install $NODE_VERSION && fnm use $NODE_VERSION"
+  fnm install "$NODE_VERSION"
+  fnm use "$NODE_VERSION"
+  eval "$(fnm env --shell bash 2>/dev/null)" || true
+}
+
 bootstrap_node_via_nvm() {
   # Nạp nvm nếu đã cài, hoặc cài mới vào $HOME (user-space, không cần sudo).
   export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -41,6 +61,14 @@ bootstrap_node_via_nvm() {
   echo "  • nvm install $NODE_VERSION && nvm use $NODE_VERSION"
   nvm install "$NODE_VERSION"
   nvm use "$NODE_VERSION"
+}
+
+bootstrap_node() {
+  if is_windows; then
+    bootstrap_node_via_fnm
+  else
+    bootstrap_node_via_nvm
+  fi
 }
 
 require_node() {
@@ -56,18 +84,21 @@ require_node() {
   fi
 
   if [ "$AUTO_INSTALL_NODE" != "1" ]; then
-    echo "  Khắc phục: cài Node >=20.12 (vd: nvm install 20 && nvm use 20) rồi chạy lại," >&2
-    echo "  hoặc chạy lại với AUTO_INSTALL_NODE=1 để script tự cài qua nvm." >&2
+    local hint="nvm install $NODE_VERSION && nvm use $NODE_VERSION"
+    is_windows && hint="fnm install $NODE_VERSION && fnm use $NODE_VERSION"
+    echo "  Khắc phục: cài Node >=20.12 (vd: $hint) rồi chạy lại," >&2
+    echo "  hoặc chạy lại với AUTO_INSTALL_NODE=1 để script tự cài." >&2
     exit 1
   fi
 
-  echo "▶ AUTO_INSTALL_NODE=1 — đang tự cài Node $NODE_VERSION qua nvm..."
-  bootstrap_node_via_nvm
+  local mgr="nvm"; is_windows && mgr="fnm"
+  echo "▶ AUTO_INSTALL_NODE=1 — đang tự cài Node $NODE_VERSION qua $mgr..."
+  bootstrap_node
 
   if node_ok; then
     echo "  ✓ Đã có Node $(node -p 'process.versions.node')"
   else
-    echo "✗ Vẫn chưa có Node hợp lệ sau khi cài. Hãy mở terminal mới, chạy 'nvm use $NODE_VERSION' rồi thử lại." >&2
+    echo "✗ Vẫn chưa có Node hợp lệ sau khi cài. Hãy mở terminal mới, chạy '$mgr use $NODE_VERSION' rồi thử lại." >&2
     exit 1
   fi
 }
