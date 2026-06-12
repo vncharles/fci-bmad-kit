@@ -27,6 +27,42 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# ── Windows: tắt Python App Execution Alias (Store stub) nếu có ─────────────────
+_is_windows() {
+  case "${OSTYPE:-}" in msys*|cygwin*|mingw*) return 0 ;; esac
+  case "$(uname -s 2>/dev/null)" in MINGW*|CYGWIN*|MSYS*) return 0 ;; esac
+  return 1
+}
+
+if _is_windows; then
+  if python --version 2>&1 | grep -qi "microsoft store\|run without arguments"; then
+    echo "  • Phát hiện Python App Execution Alias (Store stub) — đang tắt tự động..."
+    powershell.exe -NoProfile -Command "
+      \$paths = @(
+        \"\$env:LOCALAPPDATA\\Microsoft\\WindowsApps\\python.exe\",
+        \"\$env:LOCALAPPDATA\\Microsoft\\WindowsApps\\python3.exe\"
+      )
+      foreach (\$p in \$paths) {
+        if (Test-Path \$p) { Remove-Item \$p -Force -ErrorAction SilentlyContinue }
+      }
+    " 2>/dev/null \
+      && echo "  ✓ Python App Execution Alias đã tắt." \
+      || echo "  ⚠ Không tắt được tự động — vào Settings > Apps > Advanced app settings > App execution aliases, tắt python.exe và python3.exe." >&2
+  fi
+fi
+
+# Wrapper: dùng python3 nếu có, fallback python (Windows chỉ có python).
+py3() {
+  if command -v python3 >/dev/null 2>&1; then
+    python3 "$@"
+  elif command -v python >/dev/null 2>&1; then
+    python "$@"
+  else
+    echo "✗ Cần Python 3 — chưa tìm thấy python3 hoặc python trong PATH." >&2
+    exit 1
+  fi
+}
+
 # ── Lựa chọn ─────────────────────────────────────────────────────────────────────
 TARGET_DIR="${TARGET_DIR:-.}"
 WORKSPACE_ROOT="$(cd "$TARGET_DIR" && pwd)"
@@ -79,7 +115,7 @@ EOF
 
 # In ra TSV "name<TAB>url<TAB>branch<TAB>codegraph" cho repo type=app (dùng python cho chắc).
 reg_list_app_repos() {
-  python3 - "$REG" <<'PY'
+  py3 - "$REG" <<'PY'
 import sys, yaml
 d = yaml.safe_load(open(sys.argv[1])) or {}
 for r in (d.get("repos") or []):
@@ -89,7 +125,7 @@ PY
 }
 
 reg_has_repo() {  # reg_has_repo <name> -> 0 nếu có
-  python3 - "$REG" "$1" <<'PY'
+  py3 - "$REG" "$1" <<'PY'
 import sys, yaml
 d = yaml.safe_load(open(sys.argv[1])) or {}
 sys.exit(0 if any((r.get("name")==sys.argv[2]) for r in (d.get("repos") or [])) else 1)
@@ -98,7 +134,7 @@ PY
 
 reg_set_docs_origin() {  # điền url/branch thực tế cho entry docs (text-replace, giữ comment + indent)
   local url="$1" branch="$2"
-  python3 - "$REG" "$url" "$branch" <<'PY'
+  py3 - "$REG" "$url" "$branch" <<'PY'
 import sys
 p, url, branch = sys.argv[1], sys.argv[2], sys.argv[3]
 s = open(p).read()
